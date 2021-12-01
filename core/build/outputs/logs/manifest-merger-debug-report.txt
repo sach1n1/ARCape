@@ -1,0 +1,25 @@
+-- Merging decision tree log ---
+manifest
+ADDED from C:\Project\ARCape\core\src\main\AndroidManifest.xml:2:1-3:12
+INJECTED from C:\Project\ARCape\core\src\main\AndroidManifest.xml:2:1-3:12
+INJECTED from C:\Project\ARCape\core\src\main\AndroidManifest.xml:2:1-3:12
+	package
+		ADDED from C:\Project\ARCape\core\src\main\AndroidManifest.xml:2:11-44
+		INJECTED from C:\Project\ARCape\core\src\main\AndroidManifest.xml
+		INJECTED from C:\Project\ARCape\core\src\main\AndroidManifest.xml
+	xmlns:android
+		ADDED from C:\Project\ARCape\core\src\main\AndroidManifest.xml:2:1-3:12
+uses-sdk
+INJECTED from C:\Project\ARCape\core\src\main\AndroidManifest.xml reason: use-sdk injection requested
+INJECTED from C:\Project\ARCape\core\src\main\AndroidManifest.xml
+INJECTED from C:\Project\ARCape\core\src\main\AndroidManifest.xml
+INJECTED from C:\Project\ARCape\core\src\main\AndroidManifest.xml
+INJECTED from C:\Project\ARCape\core\src\main\AndroidManifest.xml
+	android:targetSdkVersion
+		INJECTED from C:\Project\ARCape\core\src\main\AndroidManifest.xml
+		ADDED from C:\Project\ARCape\core\src\main\AndroidManifest.xml
+		INJECTED from C:\Project\ARCape\core\src\main\AndroidManifest.xml
+	android:minSdkVersion
+		INJECTED from C:\Project\ARCape\core\src\main\AndroidManifest.xml
+		ADDED from C:\Project\ARCape\core\src\main\AndroidManifest.xml
+		INJECTED from C:\Project\ARCape\core\src\main\AndroidManifest.xml
