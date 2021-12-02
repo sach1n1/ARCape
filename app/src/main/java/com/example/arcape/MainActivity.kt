@@ -98,6 +98,7 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
                     {
                         "Not Activated" -> padLockSub = 0
                         "Activated" -> padLockSub = 1
+                        "Solved" -> padLockSub = 2
                     }
                 }
             }
@@ -177,6 +178,7 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
         }
         if (augmentedImage.trackingState == TrackingState.TRACKING ) {
             val anchorNodeRobot = AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose))
+            val anchorNodePadLock = AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose))
             if (!robotDetected && augmentedImage.name == "robot") {
                 robotDetected = true
                 val topic = "test/robot"
@@ -197,11 +199,12 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
                 mqttClient.subscribe(topic)
                 when(padLockSub)
                 {
-                    0 -> placeObject(anchorNodeRobot, "models/text.glb")
-                    1 -> placeObject(anchorNodeRobot, "models/text2.glb")
+                    0 -> placeObject(anchorNodePadLock, "models/nactive.glb")
+                    1 -> placeObject(anchorNodePadLock, "models/hint.glb")
+                    2 -> placeObject(anchorNodePadLock, "models/solved.glb")
                 }
                 Handler(Looper.getMainLooper()).postDelayed({
-                    arFragment!!.arSceneView.scene.removeChild(anchorNodeRobot)
+                    arFragment!!.arSceneView.scene.removeChild(anchorNodePadLock)
                     padLockDetected = false
                 }, 1000)
             }
