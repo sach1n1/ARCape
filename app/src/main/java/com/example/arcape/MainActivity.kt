@@ -21,6 +21,7 @@ import com.google.ar.sceneform.AnchorNode
 import com.google.ar.sceneform.Sceneform
 import com.google.ar.sceneform.math.Vector3
 import com.google.ar.sceneform.rendering.ModelRenderable
+import com.google.ar.sceneform.rendering.ViewRenderable
 import com.google.ar.sceneform.samples.augmentedimages.mqtt.MqttClientHelper
 import com.google.ar.sceneform.ux.ArFragment
 import com.google.ar.sceneform.ux.BaseArFragment.OnSessionConfigurationListener
@@ -31,6 +32,7 @@ import org.eclipse.paho.client.mqttv3.MqttMessage
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.function.Consumer
+import android.widget.Toast.makeText as makeText1
 
 
 class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionConfigurationListener {
@@ -50,13 +52,10 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         setContentView(R.layout.activity_main)
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
         setMqttCallBack()
-
-
         ViewCompat.setOnApplyWindowInsetsListener(toolbar) { _: View?, insets: WindowInsetsCompat ->
             (toolbar.layoutParams as MarginLayoutParams).topMargin = insets
                 .getInsets(WindowInsetsCompat.Type.systemBars()).top
@@ -84,13 +83,14 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
             @Throws(Exception::class)
             override fun messageArrived(topic: String, mqttMessage: MqttMessage) {
                 Log.w("Debug", "Message received from host '$MQTT_HOST': $mqttMessage")
+
                 if(topic == "test/robot")
                 {
                     when("$mqttMessage")
                     {
                         "Not Activated" -> robotSub = 0
                         "Activated" -> robotSub = 1
-                        "Solved" -> robotSub = 1
+                        "Solved" -> robotSub = 2
                     }
                 }
                 if(topic == "test/padLock")
@@ -147,6 +147,7 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
     }
 
     private fun placeObject(anchorNode: AnchorNode, string: String){
+        Log.w("Debug", "Rendering $string")
         anchorNode.worldScale = Vector3(0.1f, 0.1f, 0.1f)
         arFragment!!.arSceneView.scene.addChild(anchorNode)
         futures.add(ModelRenderable.builder()
@@ -161,9 +162,34 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
                 anchorNode.addChild(modelNode)
             }
             .exceptionally {
-                Toast.makeText(
+                makeText1(
                     this,
-                    "Unable to load rabbit model",
+                    "Unable to load the model",
+                    Toast.LENGTH_LONG
+                )
+                    .show()
+                null
+            })
+    }
+
+    private fun placeView(anchorNode: AnchorNode, view: Int){
+        Log.w("Debug", "New render")
+        anchorNode.worldScale = Vector3(0.1f, 0.1f, 0.1f)
+        arFragment!!.arSceneView.scene.addChild(anchorNode)
+        futures.add(ViewRenderable.builder()
+            .setView(this, view)
+            .build()
+            .thenAccept { viewModel: ViewRenderable? ->
+                val modelNode = TransformableNode(
+                    arFragment!!.transformationSystem
+                )
+                modelNode.renderable = viewModel
+                anchorNode.addChild(modelNode)
+            }
+            .exceptionally {
+                makeText1(
+                    this,
+                    "Unable to load the model",
                     Toast.LENGTH_LONG
                 )
                     .show()
@@ -174,7 +200,7 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
     private fun onAugmentedImageTrackingUpdate(augmentedImage: AugmentedImage) {
         //If robot image already detected, we can set it to false so the tracking takes place again.
         if (robotDetected) {
-            //robotDetected = false
+            robotDetected = false
             return
         }
         if (augmentedImage.trackingState == TrackingState.TRACKING ) {
@@ -184,17 +210,17 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
                 robotDetected = true
                 val topic = "test/robot"
                 mqttClient.subscribe(topic)
-                when(robotSub)
-                {
-                    0 -> placeObject(anchorNodeRobot, "models/text.glb")
+                when (robotSub) {
+                    0 -> placeView(anchorNodeRobot, R.layout.viewrender)
                     1 -> placeObject(anchorNodeRobot, "models/hint.glb")
                     2 -> placeObject(anchorNodeRobot, "models/text2.glb")
                 }
                 Handler(Looper.getMainLooper()).postDelayed({
                     arFragment!!.arSceneView.scene.removeChild(anchorNodeRobot)
                     robotDetected = false
-                }, 1000)
+                }, 500)
             }
+
             if (!padLockDetected && augmentedImage.name == "padlock") {
                 padLockDetected = true
                 val topic = "test/padLock"

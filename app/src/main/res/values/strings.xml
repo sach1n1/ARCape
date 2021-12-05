@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">ARCape</string>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
 </resources>
