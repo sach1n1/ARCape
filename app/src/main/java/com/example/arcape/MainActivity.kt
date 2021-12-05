@@ -90,6 +90,7 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
                     {
                         "Not Activated" -> robotSub = 0
                         "Activated" -> robotSub = 1
+                        "Solved" -> robotSub = 1
                     }
                 }
                 if(topic == "test/padLock")
@@ -186,7 +187,8 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
                 when(robotSub)
                 {
                     0 -> placeObject(anchorNodeRobot, "models/text.glb")
-                    1 -> placeObject(anchorNodeRobot, "models/text2.glb")
+                    1 -> placeObject(anchorNodeRobot, "models/hint.glb")
+                    2 -> placeObject(anchorNodeRobot, "models/text2.glb")
                 }
                 Handler(Looper.getMainLooper()).postDelayed({
                     arFragment!!.arSceneView.scene.removeChild(anchorNodeRobot)
