@@ -47,6 +47,7 @@ class Onboarding : AppCompatActivity() {
                 MainActivity::class.java
             )
             startActivity(startAR)
+            this.finish()
         }
      }
 }
