@@ -2,8 +2,12 @@ package com.example.arcape
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
+import android.view.ViewGroup
 import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.viewpager.widget.ViewPager
 import com.tbuonomo.viewpagerdotsindicator.DotsIndicator
 
@@ -16,6 +20,8 @@ class Onboarding : AppCompatActivity() {
      override fun onCreate(savedInstanceState: Bundle?) {
          super.onCreate(savedInstanceState)
          setContentView(R.layout.onboarding)
+
+
          val dotsIndicator = findViewById<DotsIndicator>(R.id.dots_indicator)
          viewPager = findViewById(R.id.viewpager)
          val startBtn = findViewById<Button>(R.id.startBtn)
@@ -40,11 +46,11 @@ class Onboarding : AppCompatActivity() {
 
              override fun onPageScrollStateChanged(state: Int) {}
          })
-         dotsIndicator.setViewPager(viewPager)
+        dotsIndicator.setViewPager(viewPager)
         startBtn.setOnClickListener {
             val startAR = Intent(
                 this,
-                MainActivity::class.java
+                Number::class.java
             )
             startActivity(startAR)
             this.finish()

@@ -16,20 +16,20 @@ class ViewPagerAdapter(val context: Context): PagerAdapter() {
 
     val imageArray = arrayOf(
         R.drawable.hello,
-        R.drawable.control_room,
+        R.drawable.puzzle,
         R.drawable.scan
     )
 
     val headArray = arrayOf(
-        "Hello Interns",
-        "Welcome",
+        "Hello!!",
+        "The task",
         "Scan Around"
     )
 
     val descriptionArray = arrayOf(
-        "We are so excited to have you on our team!",
-        "Here in the control room, you can see what's going on in the city",
-        "Scan the images around the room, to understand their functionality"
+        "Welcome to the Smart Escape Room.",
+        "Use your skills and solve the puzzles and get to the Control Room.",
+        "Scan the images to get hints"
     )
 
     override fun getCount(): Int {

@@ -1,5 +1,6 @@
 package com.example.arcape
 
+import android.content.res.Configuration
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
@@ -73,6 +74,11 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
         }
     }
 
+    override fun onBackPressed() {
+        super.onBackPressed()
+        this.finish()
+    }
+
     private fun setMqttCallBack() {
         mqttClient.setCallback(object : MqttCallbackExtended {
             override fun connectComplete(b: Boolean, s: String) {
@@ -90,7 +96,7 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
                     {
                         "Not Activated" -> robotSub = 0
                         "Activated" -> robotSub = 1
-                        "Solved" -> robotSub = 1
+                        "Solved" -> robotSub = 2
                     }
                 }
                 if(topic == "test/padLock")
@@ -173,8 +179,9 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
 
     private fun onAugmentedImageTrackingUpdate(augmentedImage: AugmentedImage) {
         //If robot image already detected, we can set it to false so the tracking takes place again.
-        if (robotDetected) {
+        if (robotDetected && padLockDetected) {
             //robotDetected = false
+            //padLockDetected = false
             return
         }
         if (augmentedImage.trackingState == TrackingState.TRACKING ) {
@@ -186,9 +193,9 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
                 mqttClient.subscribe(topic)
                 when(robotSub)
                 {
-                    0 -> placeObject(anchorNodeRobot, "models/text.glb")
+                    0 -> placeObject(anchorNodeRobot, "models/nactive.glb")
                     1 -> placeObject(anchorNodeRobot, "models/hint.glb")
-                    2 -> placeObject(anchorNodeRobot, "models/text2.glb")
+                    2 -> placeObject(anchorNodeRobot, "models/solved.glb")
                 }
                 Handler(Looper.getMainLooper()).postDelayed({
                     arFragment!!.arSceneView.scene.removeChild(anchorNodeRobot)
