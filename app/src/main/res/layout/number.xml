@@ -7,6 +7,15 @@
     tools:context=".MainActivity"
     android:orientation="vertical">
 
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?actionBarSize"
+        android:minHeight="?attr/actionBarSize"
+        android:popupTheme="@style/ThemeOverlay.MaterialComponents.ActionBar"
+        android:theme="@style/AppTheme.Toolbar"
+        android:background="#000000"/>
+
     <TextView
         android:id="@+id/numberText"
         android:layout_width="wrap_content"
@@ -14,7 +23,7 @@
         android:textColor="#FFFFFF"
         android:textAlignment="center"
         android:layout_marginTop="110dp"
-        android:textSize="34dp"
+        android:textSize="34sp"
         android:textStyle="bold"
         android:text="Select the number of players:" />
 
@@ -26,7 +35,7 @@
         android:padding="10dp"
         android:text="2"
         android:background="#FFFFF0"
-        android:textSize="30dp"
+        android:textSize="30sp"
         android:layout_marginTop="50dp"
         android:layout_centerHorizontal="true"/>
 
@@ -38,7 +47,7 @@
         android:padding="10dp"
         android:text="3"
         android:background="#FFFFF0"
-        android:textSize="30dp"
+        android:textSize="30sp"
         android:layout_marginTop="50dp"
         android:layout_centerHorizontal="true"/>
 
@@ -50,8 +59,7 @@
         android:padding="10dp"
         android:text="4"
         android:background="#FFFFF0"
-        android:textSize="30dp"
-        android:layout_marginTop="50dp"
-        android:layout_centerHorizontal="true"/>
+        android:textSize="30sp"
+        android:layout_marginTop="50dp" />
 
 </LinearLayout>

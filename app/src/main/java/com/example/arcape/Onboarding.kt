@@ -20,8 +20,8 @@ class Onboarding : AppCompatActivity() {
      override fun onCreate(savedInstanceState: Bundle?) {
          super.onCreate(savedInstanceState)
          setContentView(R.layout.onboarding)
-
-
+         val toolbar = findViewById<Toolbar>(R.id.toolbar)
+         setSupportActionBar(toolbar)
          val dotsIndicator = findViewById<DotsIndicator>(R.id.dots_indicator)
          viewPager = findViewById(R.id.viewpager)
          val startBtn = findViewById<Button>(R.id.startBtn)
