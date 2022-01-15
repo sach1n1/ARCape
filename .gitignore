@@ -14,6 +14,6 @@
 .cxx
 local.properties
 /.idea/
-core/build/.transforms/47e69dff4d4fe5d6d26e35ac15cd787b/
-sceneform/build/.transforms/7a38d248d90571aef0c551c58399d7e8/
-ux/build/.transforms/24df696cb4fbe6bd8482a3c53aa4ef6c/
+core/build/
+sceneform/build/
+ux/build/
