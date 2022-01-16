@@ -125,12 +125,17 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
         // Disable plane detection
         config.planeFindingMode = Config.PlaneFindingMode.DISABLED
 
-        // Images to be added in AugmentedImageDatabase
-        database = AugmentedImageDatabase(session)
+        //Using preloaded Image Database arcoreimg tool
+        val inputStream = assets.open("myimages.imgdb")
+        database= AugmentedImageDatabase.deserialize(session,inputStream)
+
+        //If you want to generate database on the go
+        /*database = AugmentedImageDatabase(session)
         val padlock = BitmapFactory.decodeResource(resources, R.drawable.padlock)
         val robotImage = BitmapFactory.decodeResource(resources, R.drawable.robot)
         database!!.addImage("robot", robotImage)
-        database!!.addImage("padlock", padlock)
+        database!!.addImage("padlock", padlock)*/
+
         config.augmentedImageDatabase = database
 
         // Check for image detection
