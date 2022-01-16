@@ -5,6 +5,6 @@
     <item>
         <bitmap
             android:gravity="center"
-            android:src="@drawable/launch" />
+            android:src="@drawable/launch_text" />
     </item>
 </layer-list>
