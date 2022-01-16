@@ -34,10 +34,9 @@
         android:layout_width="wrap_content"
         android:padding="10dp"
         android:text="2"
-        android:background="#FFFFF0"
+
         android:textSize="30sp"
-        android:layout_marginTop="50dp"
-        android:layout_centerHorizontal="true"/>
+        android:layout_marginTop="50dp" />
 
     <Button
         android:id="@+id/startBtn3"
@@ -46,10 +45,8 @@
         android:layout_width="wrap_content"
         android:padding="10dp"
         android:text="3"
-        android:background="#FFFFF0"
         android:textSize="30sp"
-        android:layout_marginTop="50dp"
-        android:layout_centerHorizontal="true"/>
+        android:layout_marginTop="50dp" />
 
     <Button
         android:id="@+id/startBtn4"
@@ -58,7 +55,6 @@
         android:layout_width="wrap_content"
         android:padding="10dp"
         android:text="4"
-        android:background="#FFFFF0"
         android:textSize="30sp"
         android:layout_marginTop="50dp" />
 
