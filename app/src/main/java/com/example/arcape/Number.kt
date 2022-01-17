@@ -40,6 +40,7 @@ class Number : AppCompatActivity() {
             this,
             MainActivity::class.java
         )
+        //made changes in MQTT Helper
         //mqttClientPub.publish()
         startActivity(startAR)
         this.finish()
