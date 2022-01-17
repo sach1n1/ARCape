@@ -41,12 +41,18 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
 
     private val futures: MutableList<CompletableFuture<Void>> = ArrayList()
     private var arFragment: ArFragment? = null
-    private var robotDetected = false
-    private var padLockDetected = false
+    private var puzzle1Detected = false
+    private var puzzle2Detected = false
+    private var puzzle3Detected = false
+    private var puzzle4Detected = false
+    private var puzzle5Detected = false
     private var database: AugmentedImageDatabase? = null
 
-    var robotSub = 0
-    var padLockSub = 0
+    var puzzle1Sub = 0
+    var puzzle2Sub = 0
+    var puzzle3Sub = 0
+    var puzzle4Sub = 0
+    var puzzle5Sub = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -89,22 +95,49 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
             @Throws(Exception::class)
             override fun messageArrived(topic: String, mqttMessage: MqttMessage) {
                 Log.w("Debug", "Message received from host '$MQTT_HOST': $mqttMessage")
-                if(topic == "test/robot")
+                if(topic == "test/puzzle1")
                 {
                     when("$mqttMessage")
                     {
-                        "Not Activated" -> robotSub = 0
-                        "Activated" -> robotSub = 1
-                        "Solved" -> robotSub = 2
+                        "Not Activated" -> puzzle1Sub = 0
+                        "Activated" -> puzzle1Sub = 1
+                        "Solved" -> puzzle1Sub = 2
                     }
                 }
-                if(topic == "test/padLock")
+                if(topic == "test/puzzle2")
                 {
                     when("$mqttMessage")
                     {
-                        "Not Activated" -> padLockSub = 0
-                        "Activated" -> padLockSub = 1
-                        "Solved" -> padLockSub = 2
+                        "Not Activated" -> puzzle2Sub = 0
+                        "Activated" -> puzzle2Sub = 1
+                        "Solved" -> puzzle2Sub = 2
+                    }
+                }
+                if(topic == "test/puzzle3")
+                {
+                    when("$mqttMessage")
+                    {
+                        "Not Activated" -> puzzle3Sub = 0
+                        "Activated" -> puzzle3Sub = 1
+                        "Solved" -> puzzle3Sub = 2
+                    }
+                }
+                if(topic == "test/puzzle4")
+                {
+                    when("$mqttMessage")
+                    {
+                        "Not Activated" -> puzzle4Sub = 0
+                        "Activated" -> puzzle4Sub = 1
+                        "Solved" -> puzzle4Sub = 2
+                    }
+                }
+                if(topic == "test/puzzle5")
+                {
+                    when("$mqttMessage")
+                    {
+                        "Not Activated" -> puzzle5Sub = 0
+                        "Activated" -> puzzle5Sub = 1
+                        "Solved" -> puzzle5Sub = 2
                     }
                 }
             }
@@ -126,7 +159,7 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
         config.planeFindingMode = Config.PlaneFindingMode.DISABLED
 
         //Using preloaded Image Database arcoreimg tool
-        val inputStream = assets.open("myimages.imgdb")
+        val inputStream = assets.open("myimages5.imgdb")
         database= AugmentedImageDatabase.deserialize(session,inputStream)
 
         //If you want to generate database on the go
@@ -182,50 +215,90 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
     }
 
     private fun onAugmentedImageTrackingUpdate(augmentedImage: AugmentedImage) {
-        //If robot image already detected, we can set it to false so the tracking takes place again.
-        if (robotDetected && padLockDetected) {
-            //robotDetected = false
-            //padLockDetected = false
+        if (puzzle1Detected && puzzle2Detected && puzzle3Detected && puzzle4Detected && puzzle5Detected) {
             return
         }
         if (augmentedImage.trackingState == TrackingState.TRACKING ) {
-            val anchorNodeRobot = AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose))
-            val anchorNodePadLock = AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose))
-            if (!robotDetected && augmentedImage.name == "robot") {
-                robotDetected = true
-                val topic = "test/robot"
+            val anchorNodePuzzle1 = AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose))
+            val anchorNodePuzzle2 = AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose))
+            val anchorNodePuzzle3 = AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose))
+            val anchorNodePuzzle4 = AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose))
+            val anchorNodePuzzle5 = AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose))
+            if (!puzzle1Detected && augmentedImage.name == "puzzle1") {
+                puzzle1Detected = true
+                val topic = "test/puzzle1"
                 mqttClient.subscribe(topic)
-                when(robotSub)
+                when(puzzle1Sub)
                 {
-                    0 -> placeObject(anchorNodeRobot, "models/nactive.glb")
-                    1 -> placeObject(anchorNodeRobot, "models/hint.glb")
-                    2 -> placeObject(anchorNodeRobot, "models/solved.glb")
+                    0 -> placeObject(anchorNodePuzzle1, "models/nactive.glb")
+                    1 -> placeObject(anchorNodePuzzle1, "models/hint.glb")
+                    2 -> placeObject(anchorNodePuzzle1, "models/solved.glb")
                 }
                 Handler(Looper.getMainLooper()).postDelayed({
-                    arFragment!!.arSceneView.scene.removeChild(anchorNodeRobot)
-                    robotDetected = false
+                    arFragment!!.arSceneView.scene.removeChild(anchorNodePuzzle1)
+                    puzzle1Detected = false
                 }, 1000)
             }
-            if (!padLockDetected && augmentedImage.name == "padlock") {
-                padLockDetected = true
-                val topic = "test/padLock"
+            if (!puzzle2Detected && augmentedImage.name == "puzzle2") {
+                puzzle2Detected = true
+                val topic = "test/puzzle2"
                 mqttClient.subscribe(topic)
-                when(padLockSub)
+                when(puzzle2Sub)
                 {
-                    0 -> placeObject(anchorNodePadLock, "models/nactive.glb")
-                    1 -> placeObject(anchorNodePadLock, "models/hint.glb")
-                    2 -> placeObject(anchorNodePadLock, "models/solved.glb")
+                    0 -> placeObject(anchorNodePuzzle2, "models/nactive.glb")
+                    1 -> placeObject(anchorNodePuzzle2, "models/hint.glb")
+                    2 -> placeObject(anchorNodePuzzle2, "models/solved.glb")
                 }
                 Handler(Looper.getMainLooper()).postDelayed({
-                    arFragment!!.arSceneView.scene.removeChild(anchorNodePadLock)
-                    padLockDetected = false
+                    arFragment!!.arSceneView.scene.removeChild(anchorNodePuzzle2)
+                    puzzle2Detected = false
+                }, 1000)
+            }
+            if (!puzzle3Detected && augmentedImage.name == "puzzle3") {
+                puzzle3Detected = true
+                val topic = "test/puzzle3"
+                mqttClient.subscribe(topic)
+                when(puzzle3Sub)
+                {
+                    0 -> placeObject(anchorNodePuzzle3, "models/nactive.glb")
+                    1 -> placeObject(anchorNodePuzzle3, "models/hint.glb")
+                    2 -> placeObject(anchorNodePuzzle3, "models/solved.glb")
+                }
+                Handler(Looper.getMainLooper()).postDelayed({
+                    arFragment!!.arSceneView.scene.removeChild(anchorNodePuzzle3)
+                    puzzle3Detected = false
+                }, 1000)
+            }
+            if (!puzzle4Detected && augmentedImage.name == "puzzle4") {
+                puzzle4Detected = true
+                val topic = "test/puzzle4"
+                mqttClient.subscribe(topic)
+                when(puzzle4Sub)
+                {
+                    0 -> placeObject(anchorNodePuzzle4, "models/nactive.glb")
+                    1 -> placeObject(anchorNodePuzzle4, "models/hint.glb")
+                    2 -> placeObject(anchorNodePuzzle4, "models/solved.glb")
+                }
+                Handler(Looper.getMainLooper()).postDelayed({
+                    arFragment!!.arSceneView.scene.removeChild(anchorNodePuzzle4)
+                    puzzle4Detected = false
+                }, 1000)
+            }
+            if (!puzzle5Detected && augmentedImage.name == "puzzle5") {
+                puzzle5Detected = true
+                val topic = "test/puzzle5"
+                mqttClient.subscribe(topic)
+                when(puzzle5Sub)
+                {
+                    0 -> placeObject(anchorNodePuzzle5, "models/nactive.glb")
+                    1 -> placeObject(anchorNodePuzzle5, "models/hint.glb")
+                    2 -> placeObject(anchorNodePuzzle5, "models/solved.glb")
+                }
+                Handler(Looper.getMainLooper()).postDelayed({
+                    arFragment!!.arSceneView.scene.removeChild(anchorNodePuzzle5)
+                    puzzle5Detected = false
                 }, 1000)
             }
         }
-        /*if (robotDetected) {
-            arFragment!!.instructionsController.setEnabled(
-                InstructionsController.TYPE_AUGMENTED_IMAGE_SCAN, false
-            )
-        }*/
     }
 }

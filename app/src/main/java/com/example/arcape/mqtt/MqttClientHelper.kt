@@ -96,11 +96,11 @@ class MqttClientHelper(context: Context?) {
         }
     }
 
-    fun publish(topic: String, msg: String, qos: Int = 0) {
+    fun publish(topic: String, msg: String, qos: Int = 0,retained: Boolean=false) {
         try {
             val message = MqttMessage()
             message.payload = msg.toByteArray()
-            mqttAndroidClient.publish(topic, message.payload, qos, false)
+            mqttAndroidClient.publish(topic, message.payload, qos, retained)
             Log.d(TAG, "Message published to topic `$topic`: $msg")
         } catch (e: MqttException) {
             Log.d(TAG, "Error Publishing to $topic: " + e.message)
