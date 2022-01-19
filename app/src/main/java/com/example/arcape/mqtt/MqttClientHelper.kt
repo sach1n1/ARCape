@@ -96,7 +96,7 @@ class MqttClientHelper(context: Context?) {
         }
     }
 
-    fun publish(topic: String, msg: String, qos: Int = 0,retained: Boolean=false) {
+    fun publish(topic: String, msg: String, qos: Int = 0,retained: Boolean = false) {
         try {
             val message = MqttMessage()
             message.payload = msg.toByteArray()

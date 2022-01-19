@@ -11,6 +11,7 @@ import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken
 import org.eclipse.paho.client.mqttv3.MqttCallbackExtended
 import org.eclipse.paho.client.mqttv3.MqttMessage
 
+
 class Number : AppCompatActivity() {
 
     private val mqttClientPub by lazy {
@@ -35,13 +36,22 @@ class Number : AppCompatActivity() {
         })
     }
 
-    private fun startMainAR() {
+
+    override fun onDestroy() {
+        super.onDestroy()
+        mqttClientPub.destroy()
+    }
+
+    private fun startMainAR( participants: Int, duration: Int) {
         val startAR = Intent(
             this,
             MainActivity::class.java
         )
-        //made changes in MQTT Helper
-        //mqttClientPub.publish()
+        //made changes in MQTT Helper to allow topic retain
+        val gameOptionsString = "{\"participants\": $participants, \"duration\": $duration, \"skipTo\": \"Server room\"}"
+        //Modify the topics (for 1 Game Control)
+        mqttClientPub.publish("rate/gameOptionss",gameOptionsString,1,true)
+        mqttClientPub.publish("rate/gameControll","START",1,true)
         startActivity(startAR)
         this.finish()
     }
@@ -51,19 +61,19 @@ class Number : AppCompatActivity() {
         setContentView(R.layout.number)
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
+        setMqttCallBack()
         val startBtn2 = findViewById<Button>(R.id.startBtn2)
         val startBtn3 = findViewById<Button>(R.id.startBtn3)
         val startBtn4 = findViewById<Button>(R.id.startBtn4)
 
         startBtn2.setOnClickListener {
-            startMainAR()
-
+            startMainAR(2,3600)
         }
         startBtn3.setOnClickListener {
-            startMainAR()
+            startMainAR(3,2400)
         }
         startBtn4.setOnClickListener {
-            startMainAR()
+            startMainAR(4,1200)
         }
     }
 }
