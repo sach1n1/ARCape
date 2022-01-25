@@ -43,15 +43,19 @@ class Number : AppCompatActivity() {
     }
 
     private fun startMainAR( participants: Int, duration: Int) {
+        for (i in 1..5)
+        {
+            mqttClientPub.publish("game/puzzle$i","Not Activated",1,true)
+        }
         val startAR = Intent(
             this,
             MainActivity::class.java
         )
         //made changes in MQTT Helper to allow topic retain
-        val gameOptionsString = "{\"participants\": $participants, \"duration\": $duration, \"skipTo\": \"Server room\"}"
+        val gameOptionsString = "{\"participants\": $participants, \"duration\": $duration, \"skipTo\": \"\"}"
         //Modify the topics (for 1 Game Control)
-        mqttClientPub.publish("rate/gameOptionss",gameOptionsString,1,true)
-        mqttClientPub.publish("rate/gameControll","START",1,true)
+        mqttClientPub.publish("1/gameOptions",gameOptionsString,1,true)
+        mqttClientPub.publish("1/gameControl","START",1,true)
         startActivity(startAR)
         this.finish()
     }

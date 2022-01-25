@@ -95,7 +95,7 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
             @Throws(Exception::class)
             override fun messageArrived(topic: String, mqttMessage: MqttMessage) {
                 Log.w("Debug", "Message received from host '$MQTT_HOST': $mqttMessage")
-                if(topic == "test/puzzle1")
+                if(topic == "game/puzzle1")
                 {
                     when("$mqttMessage")
                     {
@@ -104,7 +104,7 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
                         "Solved" -> puzzle1Sub = 2
                     }
                 }
-                if(topic == "test/puzzle2")
+                if(topic == "game/puzzle2")
                 {
                     when("$mqttMessage")
                     {
@@ -113,7 +113,7 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
                         "Solved" -> puzzle2Sub = 2
                     }
                 }
-                if(topic == "test/puzzle3")
+                if(topic == "game/puzzle3")
                 {
                     when("$mqttMessage")
                     {
@@ -122,7 +122,7 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
                         "Solved" -> puzzle3Sub = 2
                     }
                 }
-                if(topic == "test/puzzle4")
+                if(topic == "game/puzzle4")
                 {
                     when("$mqttMessage")
                     {
@@ -131,7 +131,7 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
                         "Solved" -> puzzle4Sub = 2
                     }
                 }
-                if(topic == "test/puzzle5")
+                if(topic == "game/puzzle5")
                 {
                     when("$mqttMessage")
                     {
@@ -226,7 +226,7 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
             val anchorNodePuzzle5 = AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose))
             if (!puzzle1Detected && augmentedImage.name == "puzzle1") {
                 puzzle1Detected = true
-                val topic = "test/puzzle1"
+                val topic = "game/puzzle1"
                 mqttClient.subscribe(topic)
                 when(puzzle1Sub)
                 {
@@ -241,7 +241,7 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
             }
             if (!puzzle2Detected && augmentedImage.name == "puzzle2") {
                 puzzle2Detected = true
-                val topic = "test/puzzle2"
+                val topic = "game/puzzle2"
                 mqttClient.subscribe(topic)
                 when(puzzle2Sub)
                 {
@@ -256,7 +256,7 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
             }
             if (!puzzle3Detected && augmentedImage.name == "puzzle3") {
                 puzzle3Detected = true
-                val topic = "test/puzzle3"
+                val topic = "game/puzzle3"
                 mqttClient.subscribe(topic)
                 when(puzzle3Sub)
                 {
@@ -271,7 +271,7 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
             }
             if (!puzzle4Detected && augmentedImage.name == "puzzle4") {
                 puzzle4Detected = true
-                val topic = "test/puzzle4"
+                val topic = "game/puzzle4"
                 mqttClient.subscribe(topic)
                 when(puzzle4Sub)
                 {
@@ -286,7 +286,7 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
             }
             if (!puzzle5Detected && augmentedImage.name == "puzzle5") {
                 puzzle5Detected = true
-                val topic = "test/puzzle5"
+                val topic = "game/puzzle5"
                 mqttClient.subscribe(topic)
                 when(puzzle5Sub)
                 {
