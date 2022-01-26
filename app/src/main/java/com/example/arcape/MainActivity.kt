@@ -1,10 +1,12 @@
 package com.example.arcape
 
+import android.content.Context
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.os.Vibrator
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup.MarginLayoutParams
@@ -53,6 +55,12 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
     var puzzle3Sub = 0
     var puzzle4Sub = 0
     var puzzle5Sub = 0
+
+    var puzzle1Vib = 0
+    var puzzle2Vib = 0
+    var puzzle3Vib = 0
+    var puzzle4Vib = 0
+    var puzzle5Vib = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -224,6 +232,7 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
             val anchorNodePuzzle3 = AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose))
             val anchorNodePuzzle4 = AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose))
             val anchorNodePuzzle5 = AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose))
+            val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
             if (!puzzle1Detected && augmentedImage.name == "puzzle1") {
                 puzzle1Detected = true
                 val topic = "game/puzzle1"
@@ -231,7 +240,13 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
                 when(puzzle1Sub)
                 {
                     0 -> placeObject(anchorNodePuzzle1, "models/nactive.glb")
-                    1 -> placeObject(anchorNodePuzzle1, "models/hint.glb")
+                    1 -> {
+                        placeObject(anchorNodePuzzle1, "models/hint.glb")
+                        if (puzzle1Vib == 0) {
+                            vibrator.vibrate(500)
+                            puzzle1Vib = 1
+                        }
+                    }
                     2 -> placeObject(anchorNodePuzzle1, "models/solved.glb")
                 }
                 Handler(Looper.getMainLooper()).postDelayed({
@@ -246,7 +261,13 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
                 when(puzzle2Sub)
                 {
                     0 -> placeObject(anchorNodePuzzle2, "models/nactive.glb")
-                    1 -> placeObject(anchorNodePuzzle2, "models/hint.glb")
+                    1 -> {
+                        placeObject(anchorNodePuzzle2, "models/hint.glb")
+                        if (puzzle2Vib == 0) {
+                            vibrator.vibrate(500)
+                            puzzle2Vib = 1
+                        }
+                    }
                     2 -> placeObject(anchorNodePuzzle2, "models/solved.glb")
                 }
                 Handler(Looper.getMainLooper()).postDelayed({
@@ -261,7 +282,13 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
                 when(puzzle3Sub)
                 {
                     0 -> placeObject(anchorNodePuzzle3, "models/nactive.glb")
-                    1 -> placeObject(anchorNodePuzzle3, "models/hint.glb")
+                    1 -> {
+                        placeObject(anchorNodePuzzle3, "models/hint.glb")
+                        if (puzzle3Vib == 0) {
+                            vibrator.vibrate(500)
+                            puzzle3Vib = 1
+                        }
+                    }
                     2 -> placeObject(anchorNodePuzzle3, "models/solved.glb")
                 }
                 Handler(Looper.getMainLooper()).postDelayed({
@@ -276,7 +303,13 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
                 when(puzzle4Sub)
                 {
                     0 -> placeObject(anchorNodePuzzle4, "models/nactive.glb")
-                    1 -> placeObject(anchorNodePuzzle4, "models/hint.glb")
+                    1 -> {
+                        placeObject(anchorNodePuzzle4, "models/hint.glb")
+                        if (puzzle4Vib == 0) {
+                            vibrator.vibrate(500)
+                            puzzle4Vib = 1
+                        }
+                    }
                     2 -> placeObject(anchorNodePuzzle4, "models/solved.glb")
                 }
                 Handler(Looper.getMainLooper()).postDelayed({
@@ -291,7 +324,13 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
                 when(puzzle5Sub)
                 {
                     0 -> placeObject(anchorNodePuzzle5, "models/nactive.glb")
-                    1 -> placeObject(anchorNodePuzzle5, "models/hint.glb")
+                    1 -> {
+                        placeObject(anchorNodePuzzle5, "models/hint.glb")
+                        if (puzzle5Vib == 0) {
+                            vibrator.vibrate(500)
+                            puzzle5Vib = 1
+                        }
+                    }
                     2 -> placeObject(anchorNodePuzzle5, "models/solved.glb")
                 }
                 Handler(Looper.getMainLooper()).postDelayed({
