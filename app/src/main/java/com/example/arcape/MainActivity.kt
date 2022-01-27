@@ -18,6 +18,10 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentOnAttachListener
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import com.google.ar.core.*
 import com.google.ar.sceneform.AnchorNode
 import com.google.ar.sceneform.Sceneform
@@ -30,6 +34,7 @@ import com.google.ar.sceneform.ux.TransformableNode
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken
 import org.eclipse.paho.client.mqttv3.MqttCallbackExtended
 import org.eclipse.paho.client.mqttv3.MqttMessage
+import java.lang.Math.sqrt
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.function.Consumer
@@ -50,6 +55,12 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
     private var puzzle5Detected = false
     private var database: AugmentedImageDatabase? = null
 
+
+    private var sensorManager: SensorManager? = null
+    private var acceleration = 0f
+    private var currentAcceleration = 0f
+    private var lastAcceleration = 0f
+
     var puzzle1Sub = 0
     var puzzle2Sub = 0
     var puzzle3Sub = 0
@@ -61,6 +72,8 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
     var puzzle3Vib = 0
     var puzzle4Vib = 0
     var puzzle5Vib = 0
+
+    var state4 = "models/shake.glb"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -77,6 +90,13 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
             WindowInsetsCompat.CONSUMED
         }
 
+        sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        Objects.requireNonNull(sensorManager)!!.registerListener(sensorListener, sensorManager!!
+            .getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_NORMAL)
+        acceleration = 10f
+        currentAcceleration = SensorManager.GRAVITY_EARTH
+        lastAcceleration = SensorManager.GRAVITY_EARTH
+
         supportFragmentManager.addFragmentOnAttachListener(this)
         if (savedInstanceState == null) {
             if (Sceneform.isSupported(this)) {
@@ -87,9 +107,38 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
         }
     }
 
+    override fun onResume() {
+        sensorManager?.registerListener(sensorListener, sensorManager!!.getDefaultSensor(
+            Sensor .TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_NORMAL
+        )
+        super.onResume()
+    }
+
+    override fun onPause() {
+        sensorManager!!.unregisterListener(sensorListener)
+        super.onPause()
+    }
+
     override fun onBackPressed() {
         super.onBackPressed()
         this.finish()
+    }
+
+    private val sensorListener: SensorEventListener = object : SensorEventListener {
+        override fun onSensorChanged(event: SensorEvent) {
+            val x = event.values[0]
+            val y = event.values[1]
+            val z = event.values[2]
+            lastAcceleration = currentAcceleration
+            currentAcceleration = sqrt((x * x + y * y + z * z).toDouble()).toFloat()
+            val delta: Float = currentAcceleration - lastAcceleration
+            acceleration = acceleration * 0.9f + delta
+            if (acceleration > 7) {
+                Toast.makeText(applicationContext, "Shake event detected", Toast.LENGTH_SHORT).show()
+                if (puzzle4Vib == 1) puzzle4Vib=2
+            }
+        }
+        override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {}
     }
 
     private fun setMqttCallBack() {
@@ -304,11 +353,19 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
                 {
                     0 -> placeObject(anchorNodePuzzle4, "models/nactive.glb")
                     1 -> {
-                        placeObject(anchorNodePuzzle4, "models/hint.glb")
-                        if (puzzle4Vib == 0) {
-                            vibrator.vibrate(500)
-                            puzzle4Vib = 1
+                        when(puzzle4Vib)
+                        {
+                            0 -> {
+                                vibrator.vibrate(500)
+                                puzzle4Vib = 1
+                            }
+                            2 -> {
+                                vibrator.vibrate(110)
+                                state4 = "models/hint.glb"
+                                puzzle4Vib = 3
+                            }
                         }
+                        placeObject(anchorNodePuzzle4, state4)
                     }
                     2 -> placeObject(anchorNodePuzzle4, "models/solved.glb")
                 }
