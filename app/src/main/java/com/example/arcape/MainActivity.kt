@@ -1,7 +1,6 @@
 package com.example.arcape
 
 import android.content.Context
-//import android.graphics.BitmapFactory   for runtime database creation
 import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
@@ -96,7 +95,7 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
             mqttClient.subscribe("game/puzzle3")
             mqttClient.subscribe("game/puzzle4")
             mqttClient.subscribe("game/puzzle5")
-        }, 3000)
+        }, 2000)
 
 
 
@@ -245,13 +244,6 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
         val inputStream = assets.open("myimages5.imgdb")
         database= AugmentedImageDatabase.deserialize(session,inputStream)
 
-        //If you want to generate database on the go
-        /*database = AugmentedImageDatabase(session)
-        val padlock = BitmapFactory.decodeResource(resources, R.drawable.padlock)
-        val robotImage = BitmapFactory.decodeResource(resources, R.drawable.robot)
-        database!!.addImage("robot", robotImage)
-        database!!.addImage("padlock", padlock)*/
-
         config.augmentedImageDatabase = database
 
         // Check for image detection
@@ -273,7 +265,6 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
     }
 
     private fun placeObject(anchorNode: AnchorNode, string: String){
-
         anchorNode.worldScale = Vector3(0.1f, 0.1f, 0.1f)
         arFragment!!.arSceneView.scene.addChild(anchorNode)
         futures.add(ModelRenderable.builder()
@@ -299,16 +290,15 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
     }
 
     private fun onAugmentedImageTrackingUpdate(augmentedImage: AugmentedImage) {
-
-        val anchorNodePuzzle1 = AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose))
-        val anchorNodePuzzle2 = AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose))
-        val anchorNodePuzzle3 = AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose))
-        val anchorNodePuzzle4 = AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose))
-        val anchorNodePuzzle5 = AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose))
         if (puzzle1Detected && puzzle2Detected && puzzle3Detected && puzzle4Detected && puzzle5Detected) {
             return
         }
         if (augmentedImage.trackingState == TrackingState.TRACKING ) {
+            val anchorNodePuzzle1 = AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose))
+            val anchorNodePuzzle2 = AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose))
+            val anchorNodePuzzle3 = AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose))
+            val anchorNodePuzzle4 = AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose))
+            val anchorNodePuzzle5 = AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose))
             val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
             if (!puzzle1Detected && augmentedImage.name == "puzzle1") {
                 puzzle1Detected = true
