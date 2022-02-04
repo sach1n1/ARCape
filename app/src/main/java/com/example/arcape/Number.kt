@@ -54,8 +54,8 @@ class Number : AppCompatActivity() {
         //made changes in MQTT Helper to allow topic retain
         val gameOptionsString = "{\"participants\": $participants, \"duration\": $duration, \"skipTo\": \"\"}"
         //Modify the topics (for 1 Game Control)
-        mqttClientPub.publish("1/gameOptions",gameOptionsString,1,true)
-        mqttClientPub.publish("1/gameControl","START",1,true)
+        mqttClientPub.publish("op/gameOptions",gameOptionsString,1,true)
+        mqttClientPub.publish("op/gameControl","START",1,true)
         startActivity(startAR)
         this.finish()
     }

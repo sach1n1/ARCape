@@ -1,7 +1,7 @@
 package com.example.arcape
 
 import android.content.Context
-import android.graphics.BitmapFactory
+//import android.graphics.BitmapFactory   for runtime database creation
 import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
@@ -33,6 +33,7 @@ import com.google.ar.sceneform.ux.BaseArFragment.OnSessionConfigurationListener
 import com.google.ar.sceneform.ux.TransformableNode
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken
 import org.eclipse.paho.client.mqttv3.MqttCallbackExtended
+import org.eclipse.paho.client.mqttv3.MqttException
 import org.eclipse.paho.client.mqttv3.MqttMessage
 import java.lang.Math.sqrt
 import java.util.*
@@ -54,6 +55,7 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
     private var puzzle4Detected = false
     private var puzzle5Detected = false
     private var database: AugmentedImageDatabase? = null
+    private var onInitialize = 1
 
 
     private var sensorManager: SensorManager? = null
@@ -66,12 +68,8 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
     var puzzle3Sub = 0
     var puzzle4Sub = 0
     var puzzle5Sub = 0
-
-    var puzzle1Vib = 0
-    var puzzle2Vib = 0
-    var puzzle3Vib = 0
+    
     var puzzle4Vib = 0
-    var puzzle5Vib = 0
 
     var state4 = "models/shake.glb"
 
@@ -90,8 +88,20 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
             WindowInsetsCompat.CONSUMED
         }
 
+
+
+        Handler(Looper.getMainLooper()).postDelayed({
+            mqttClient.subscribe("game/puzzle1")
+            mqttClient.subscribe("game/puzzle2")
+            mqttClient.subscribe("game/puzzle3")
+            mqttClient.subscribe("game/puzzle4")
+            mqttClient.subscribe("game/puzzle5")
+        }, 3000)
+
+
+
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
-        Objects.requireNonNull(sensorManager)!!.registerListener(sensorListener, sensorManager!!
+        Objects.requireNonNull(sensorManager)?.registerListener(sensorListener, sensorManager!!
             .getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_NORMAL)
         acceleration = 10f
         currentAcceleration = SensorManager.GRAVITY_EARTH
@@ -133,7 +143,7 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
             currentAcceleration = sqrt((x * x + y * y + z * z).toDouble()).toFloat()
             val delta: Float = currentAcceleration - lastAcceleration
             acceleration = acceleration * 0.9f + delta
-            if (acceleration > 7) {
+            if (acceleration > 12) {
                 Toast.makeText(applicationContext, "Shake event detected", Toast.LENGTH_SHORT).show()
                 if (puzzle4Vib == 1) puzzle4Vib=2
             }
@@ -152,12 +162,16 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
             @Throws(Exception::class)
             override fun messageArrived(topic: String, mqttMessage: MqttMessage) {
                 Log.w("Debug", "Message received from host '$MQTT_HOST': $mqttMessage")
+                val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
                 if(topic == "game/puzzle1")
                 {
                     when("$mqttMessage")
                     {
                         "Not Activated" -> puzzle1Sub = 0
-                        "Activated" -> puzzle1Sub = 1
+                        "Activated" -> {
+                            puzzle1Sub = 1
+                            vibrator.vibrate(500)
+                        }
                         "Solved" -> puzzle1Sub = 2
                     }
                 }
@@ -166,7 +180,10 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
                     when("$mqttMessage")
                     {
                         "Not Activated" -> puzzle2Sub = 0
-                        "Activated" -> puzzle2Sub = 1
+                        "Activated" -> {
+                            puzzle2Sub = 1
+                            vibrator.vibrate(500)
+                        }
                         "Solved" -> puzzle2Sub = 2
                     }
                 }
@@ -175,7 +192,10 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
                     when("$mqttMessage")
                     {
                         "Not Activated" -> puzzle3Sub = 0
-                        "Activated" -> puzzle3Sub = 1
+                        "Activated" -> {
+                            puzzle3Sub = 1
+                            vibrator.vibrate(500)
+                        }
                         "Solved" -> puzzle3Sub = 2
                     }
                 }
@@ -184,7 +204,10 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
                     when("$mqttMessage")
                     {
                         "Not Activated" -> puzzle4Sub = 0
-                        "Activated" -> puzzle4Sub = 1
+                        "Activated" -> {
+                            puzzle4Sub = 1
+                            vibrator.vibrate(500)
+                        }
                         "Solved" -> puzzle4Sub = 2
                     }
                 }
@@ -193,7 +216,10 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
                     when("$mqttMessage")
                     {
                         "Not Activated" -> puzzle5Sub = 0
-                        "Activated" -> puzzle5Sub = 1
+                        "Activated" -> {
+                            puzzle5Sub = 1
+                            vibrator.vibrate(500)
+                        }
                         "Solved" -> puzzle5Sub = 2
                     }
                 }
@@ -247,6 +273,7 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
     }
 
     private fun placeObject(anchorNode: AnchorNode, string: String){
+
         anchorNode.worldScale = Vector3(0.1f, 0.1f, 0.1f)
         arFragment!!.arSceneView.scene.addChild(anchorNode)
         futures.add(ModelRenderable.builder()
@@ -263,7 +290,7 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
             .exceptionally {
                 Toast.makeText(
                     this,
-                    "Unable to load rabbit model",
+                    "Unable to load model",
                     Toast.LENGTH_LONG
                 )
                     .show()
@@ -272,30 +299,22 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
     }
 
     private fun onAugmentedImageTrackingUpdate(augmentedImage: AugmentedImage) {
+
+        val anchorNodePuzzle1 = AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose))
+        val anchorNodePuzzle2 = AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose))
+        val anchorNodePuzzle3 = AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose))
+        val anchorNodePuzzle4 = AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose))
+        val anchorNodePuzzle5 = AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose))
         if (puzzle1Detected && puzzle2Detected && puzzle3Detected && puzzle4Detected && puzzle5Detected) {
             return
         }
         if (augmentedImage.trackingState == TrackingState.TRACKING ) {
-            val anchorNodePuzzle1 = AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose))
-            val anchorNodePuzzle2 = AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose))
-            val anchorNodePuzzle3 = AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose))
-            val anchorNodePuzzle4 = AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose))
-            val anchorNodePuzzle5 = AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose))
             val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
             if (!puzzle1Detected && augmentedImage.name == "puzzle1") {
                 puzzle1Detected = true
-                val topic = "game/puzzle1"
-                mqttClient.subscribe(topic)
-                when(puzzle1Sub)
-                {
+                when (puzzle1Sub) {
                     0 -> placeObject(anchorNodePuzzle1, "models/nactive.glb")
-                    1 -> {
-                        placeObject(anchorNodePuzzle1, "models/hint.glb")
-                        if (puzzle1Vib == 0) {
-                            vibrator.vibrate(500)
-                            puzzle1Vib = 1
-                        }
-                    }
+                    1 -> placeObject(anchorNodePuzzle1, "models/hint.glb")
                     2 -> placeObject(anchorNodePuzzle1, "models/solved.glb")
                 }
                 Handler(Looper.getMainLooper()).postDelayed({
@@ -305,18 +324,10 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
             }
             if (!puzzle2Detected && augmentedImage.name == "puzzle2") {
                 puzzle2Detected = true
-                val topic = "game/puzzle2"
-                mqttClient.subscribe(topic)
                 when(puzzle2Sub)
                 {
                     0 -> placeObject(anchorNodePuzzle2, "models/nactive.glb")
-                    1 -> {
-                        placeObject(anchorNodePuzzle2, "models/hint.glb")
-                        if (puzzle2Vib == 0) {
-                            vibrator.vibrate(500)
-                            puzzle2Vib = 1
-                        }
-                    }
+                    1 -> placeObject(anchorNodePuzzle2, "models/hint.glb")
                     2 -> placeObject(anchorNodePuzzle2, "models/solved.glb")
                 }
                 Handler(Looper.getMainLooper()).postDelayed({
@@ -326,18 +337,10 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
             }
             if (!puzzle3Detected && augmentedImage.name == "puzzle3") {
                 puzzle3Detected = true
-                val topic = "game/puzzle3"
-                mqttClient.subscribe(topic)
                 when(puzzle3Sub)
                 {
                     0 -> placeObject(anchorNodePuzzle3, "models/nactive.glb")
-                    1 -> {
-                        placeObject(anchorNodePuzzle3, "models/hint.glb")
-                        if (puzzle3Vib == 0) {
-                            vibrator.vibrate(500)
-                            puzzle3Vib = 1
-                        }
-                    }
+                    1 -> placeObject(anchorNodePuzzle3, "models/hint.glb")
                     2 -> placeObject(anchorNodePuzzle3, "models/solved.glb")
                 }
                 Handler(Looper.getMainLooper()).postDelayed({
@@ -347,8 +350,6 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
             }
             if (!puzzle4Detected && augmentedImage.name == "puzzle4") {
                 puzzle4Detected = true
-                val topic = "game/puzzle4"
-                mqttClient.subscribe(topic)
                 when(puzzle4Sub)
                 {
                     0 -> placeObject(anchorNodePuzzle4, "models/nactive.glb")
@@ -376,18 +377,10 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
             }
             if (!puzzle5Detected && augmentedImage.name == "puzzle5") {
                 puzzle5Detected = true
-                val topic = "game/puzzle5"
-                mqttClient.subscribe(topic)
                 when(puzzle5Sub)
                 {
                     0 -> placeObject(anchorNodePuzzle5, "models/nactive.glb")
-                    1 -> {
-                        placeObject(anchorNodePuzzle5, "models/hint.glb")
-                        if (puzzle5Vib == 0) {
-                            vibrator.vibrate(500)
-                            puzzle5Vib = 1
-                        }
-                    }
+                    1 -> placeObject(anchorNodePuzzle5, "models/hint.glb")
                     2 -> placeObject(anchorNodePuzzle5, "models/solved.glb")
                 }
                 Handler(Looper.getMainLooper()).postDelayed({
