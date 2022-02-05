@@ -2,10 +2,6 @@ package com.example.arcape
 
 import android.content.Context
 import android.net.Uri
-import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
-import android.os.Vibrator
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup.MarginLayoutParams
@@ -21,6 +17,7 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import android.os.*
 import com.google.ar.core.*
 import com.google.ar.sceneform.AnchorNode
 import com.google.ar.sceneform.Sceneform
@@ -32,9 +29,7 @@ import com.google.ar.sceneform.ux.BaseArFragment.OnSessionConfigurationListener
 import com.google.ar.sceneform.ux.TransformableNode
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken
 import org.eclipse.paho.client.mqttv3.MqttCallbackExtended
-import org.eclipse.paho.client.mqttv3.MqttException
 import org.eclipse.paho.client.mqttv3.MqttMessage
-import java.lang.Math.sqrt
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.function.Consumer
@@ -54,7 +49,6 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
     private var puzzle4Detected = false
     private var puzzle5Detected = false
     private var database: AugmentedImageDatabase? = null
-    private var onInitialize = 1
 
 
     private var sensorManager: SensorManager? = null
@@ -67,10 +61,8 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
     var puzzle3Sub = 0
     var puzzle4Sub = 0
     var puzzle5Sub = 0
-    
-    var puzzle4Vib = 0
 
-    var state4 = "models/shake.glb"
+    var shake = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -139,12 +131,12 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
             val y = event.values[1]
             val z = event.values[2]
             lastAcceleration = currentAcceleration
-            currentAcceleration = sqrt((x * x + y * y + z * z).toDouble()).toFloat()
+            currentAcceleration = kotlin.math.sqrt((x * x + y * y + z * z).toDouble()).toFloat()
             val delta: Float = currentAcceleration - lastAcceleration
             acceleration = acceleration * 0.9f + delta
             if (acceleration > 12) {
-                Toast.makeText(applicationContext, "Shake event detected", Toast.LENGTH_SHORT).show()
-                if (puzzle4Vib == 1) puzzle4Vib=2
+                //Toast.makeText(applicationContext, "Shake event detected", Toast.LENGTH_SHORT).show()
+                if (!shake) shake=true
             }
         }
         override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {}
@@ -167,11 +159,22 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
                     when("$mqttMessage")
                     {
                         "Not Activated" -> puzzle1Sub = 0
-                        "Activated" -> {
+                        "Hint1" -> {
                             puzzle1Sub = 1
                             vibrator.vibrate(500)
+                            shake = false
                         }
-                        "Solved" -> puzzle1Sub = 2
+                        "Hint2" -> {
+                            puzzle1Sub = 2
+                            vibrator.vibrate(500)
+                            shake = false
+                        }
+                        "Hint3" -> {
+                            puzzle1Sub = 3
+                            vibrator.vibrate(500)
+                            shake = false
+                        }
+                        "Solved" -> puzzle1Sub = 4
                     }
                 }
                 if(topic == "game/puzzle2")
@@ -182,6 +185,7 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
                         "Activated" -> {
                             puzzle2Sub = 1
                             vibrator.vibrate(500)
+                            shake = false
                         }
                         "Solved" -> puzzle2Sub = 2
                     }
@@ -191,11 +195,37 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
                     when("$mqttMessage")
                     {
                         "Not Activated" -> puzzle3Sub = 0
-                        "Activated" -> {
+                        "antenna_activate_1" -> {
                             puzzle3Sub = 1
                             vibrator.vibrate(500)
+                            shake = false
                         }
-                        "Solved" -> puzzle3Sub = 2
+                        "map_activate_1" -> {
+                            puzzle3Sub = 2
+                            vibrator.vibrate(500)
+                            shake = false
+                        }
+                        "map_activate_2" -> {
+                            puzzle3Sub = 3
+                            vibrator.vibrate(500)
+                            shake = false
+                        }
+                        "touch_activate_1" -> {
+                            puzzle3Sub = 4
+                            vibrator.vibrate(500)
+                            shake = false
+                        }
+                        "touch_activate_2" -> {
+                            puzzle3Sub = 5
+                            vibrator.vibrate(500)
+                            shake = false
+                        }
+                        "touch_activate_3" -> {
+                            puzzle3Sub = 6
+                            vibrator.vibrate(500)
+                            shake = false
+                        }
+                        "Solved" -> puzzle3Sub = 7
                     }
                 }
                 if(topic == "game/puzzle4")
@@ -206,6 +236,7 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
                         "Activated" -> {
                             puzzle4Sub = 1
                             vibrator.vibrate(500)
+                            shake = false
                         }
                         "Solved" -> puzzle4Sub = 2
                     }
@@ -218,6 +249,7 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
                         "Activated" -> {
                             puzzle5Sub = 1
                             vibrator.vibrate(500)
+                            shake=false
                         }
                         "Solved" -> puzzle5Sub = 2
                     }
@@ -252,6 +284,12 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
                 augmentedImage
             )
         }
+    }
+
+    private fun reloadActivity() {
+        startActivity(intent)
+        finish()
+        overridePendingTransition(0, 0)
     }
 
     override fun onDestroy() {
@@ -299,84 +337,237 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
             val anchorNodePuzzle3 = AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose))
             val anchorNodePuzzle4 = AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose))
             val anchorNodePuzzle5 = AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose))
-            val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+
             if (!puzzle1Detected && augmentedImage.name == "puzzle1") {
                 puzzle1Detected = true
+                var delay=1000
                 when (puzzle1Sub) {
                     0 -> placeObject(anchorNodePuzzle1, "models/nactive.glb")
-                    1 -> placeObject(anchorNodePuzzle1, "models/hint.glb")
-                    2 -> placeObject(anchorNodePuzzle1, "models/solved.glb")
+                    1 -> {
+                        when(shake) {
+                            false -> placeObject(anchorNodePuzzle1, "models/shake.glb")
+                            true ->  placeObject(anchorNodePuzzle1, "models/puzzle1/hint1.glb")
+                        }
+                    }
+                    2 -> {
+                        when(shake){
+                            false -> placeObject(anchorNodePuzzle1, "models/shake.glb")
+                            true -> placeObject(anchorNodePuzzle1, "models/puzzle1/hint2.glb")
+                        }
+                    }
+                    3 -> {
+                        when(shake){
+                            false -> placeObject(anchorNodePuzzle1, "models/shake.glb")
+                            true -> placeObject(anchorNodePuzzle1, "models/puzzle1/hint3.glb")
+                        }
+                    }
+                    4 -> {
+                        placeObject(anchorNodePuzzle1, "models/solved.glb")
+                        puzzle1Sub=5
+                        delay=10000
+                    }
                 }
                 Handler(Looper.getMainLooper()).postDelayed({
-                    arFragment!!.arSceneView.scene.removeChild(anchorNodePuzzle1)
+                    anchorNodePuzzle1.anchor?.detach()
+                    anchorNodePuzzle1.parent = null
+                    anchorNodePuzzle1.anchor = null
+                    anchorNodePuzzle1.renderable = null
+                    arFragment!!.arSceneView.scene.removeChild(anchorNodePuzzle2)
                     puzzle1Detected = false
-                }, 1000)
+                    if (puzzle1Sub==5){
+                        puzzle1Detected = true
+                        anchorNodePuzzle1.anchor?.detach()
+                        anchorNodePuzzle1.parent = null
+                        anchorNodePuzzle1.anchor = null
+                        anchorNodePuzzle1.renderable = null
+                        anchorNodePuzzle1.removeChild(anchorNodePuzzle1)
+                        reloadActivity()
+                    }
+                }, delay.toLong())
             }
+
+
             if (!puzzle2Detected && augmentedImage.name == "puzzle2") {
+                var delay=1000
                 puzzle2Detected = true
                 when(puzzle2Sub)
                 {
                     0 -> placeObject(anchorNodePuzzle2, "models/nactive.glb")
-                    1 -> placeObject(anchorNodePuzzle2, "models/hint.glb")
-                    2 -> placeObject(anchorNodePuzzle2, "models/solved.glb")
+                    1 -> {
+                        when(shake) {
+                            false -> placeObject(anchorNodePuzzle2, "models/shake.glb")
+                            true -> placeObject(anchorNodePuzzle2, "models/puzzle2/hint.glb")
+                        }
+                    }
+                    2 -> {
+                        placeObject(anchorNodePuzzle2, "models/solved.glb")
+                        puzzle2Sub=3
+                        delay=10000
+                    }
                 }
                 Handler(Looper.getMainLooper()).postDelayed({
+                    anchorNodePuzzle2.anchor?.detach()
+                    anchorNodePuzzle2.parent = null
+                    anchorNodePuzzle2.anchor = null
+                    anchorNodePuzzle2.renderable = null
                     arFragment!!.arSceneView.scene.removeChild(anchorNodePuzzle2)
                     puzzle2Detected = false
-                }, 1000)
+                    if (puzzle2Sub==3){
+                        puzzle2Detected = true
+                        anchorNodePuzzle2.anchor?.detach()
+                        anchorNodePuzzle2.parent = null
+                        anchorNodePuzzle2.anchor = null
+                        anchorNodePuzzle2.renderable = null
+                        anchorNodePuzzle2.removeChild(anchorNodePuzzle2)
+                        reloadActivity()
+                    }
+                },delay.toLong())
             }
+
+
             if (!puzzle3Detected && augmentedImage.name == "puzzle3") {
+                var delay=1000
                 puzzle3Detected = true
                 when(puzzle3Sub)
                 {
                     0 -> placeObject(anchorNodePuzzle3, "models/nactive.glb")
-                    1 -> placeObject(anchorNodePuzzle3, "models/hint.glb")
-                    2 -> placeObject(anchorNodePuzzle3, "models/solved.glb")
+                    1 -> {
+                        when(shake){
+                            false -> placeObject(anchorNodePuzzle3, "models/shake.glb")
+                            true -> placeObject(anchorNodePuzzle3, "models/puzzle3/antenna.glb")
+                        }
+                    }
+                    2 -> {
+                        when(shake){
+                            false -> placeObject(anchorNodePuzzle3, "models/shake.glb")
+                            true -> placeObject(anchorNodePuzzle3, "models/puzzle3/map1.glb")
+                        }
+                    }
+                    3 -> {
+                        when(shake){
+                            false -> placeObject(anchorNodePuzzle3, "models/shake.glb")
+                            true -> placeObject(anchorNodePuzzle3, "models/puzzle3/map2.glb")
+                        }
+                    }
+                    4 -> {
+                        when(shake){
+                            false -> placeObject(anchorNodePuzzle3, "models/shake.glb")
+                            true -> placeObject(anchorNodePuzzle3, "models/puzzle3/touch1.glb")
+                        }
+                    }
+                    5 -> {
+                        when(shake){
+                            false -> placeObject(anchorNodePuzzle3, "models/shake.glb")
+                            true -> placeObject(anchorNodePuzzle3, "models/puzzle3/touch2.glb")
+                        }
+                    }
+                    6 -> {
+                        when(shake){
+                            false -> placeObject(anchorNodePuzzle3, "models/shake.glb")
+                            true -> placeObject(anchorNodePuzzle3, "models/puzzle3/touch3.glb")
+                        }
+                    }
+                    7 -> {
+                        placeObject(anchorNodePuzzle3, "models/solved.glb")
+                        puzzle3Sub=8
+                        delay=10000
+                    }
                 }
                 Handler(Looper.getMainLooper()).postDelayed({
                     arFragment!!.arSceneView.scene.removeChild(anchorNodePuzzle3)
                     puzzle3Detected = false
-                }, 1000)
+                    anchorNodePuzzle3.anchor?.detach()
+                    anchorNodePuzzle3.parent = null
+                    anchorNodePuzzle3.anchor = null
+                    anchorNodePuzzle3.renderable = null
+                    if (puzzle3Sub==8){
+                        puzzle3Detected = true
+                        anchorNodePuzzle3.anchor?.detach()
+                        anchorNodePuzzle3.parent = null
+                        anchorNodePuzzle3.anchor = null
+                        anchorNodePuzzle3.renderable = null
+                        anchorNodePuzzle3.removeChild(anchorNodePuzzle3)
+                        reloadActivity()
+                    }
+                }, delay.toLong())
             }
+
+
             if (!puzzle4Detected && augmentedImage.name == "puzzle4") {
+                var delay=1000
                 puzzle4Detected = true
                 when(puzzle4Sub)
                 {
                     0 -> placeObject(anchorNodePuzzle4, "models/nactive.glb")
                     1 -> {
-                        when(puzzle4Vib)
+                        when(shake)
                         {
-                            0 -> {
-                                vibrator.vibrate(500)
-                                puzzle4Vib = 1
-                            }
-                            2 -> {
-                                vibrator.vibrate(110)
-                                state4 = "models/hint.glb"
-                                puzzle4Vib = 3
-                            }
+                            false -> placeObject(anchorNodePuzzle4, "models/shake.glb")
+                            true -> placeObject(anchorNodePuzzle4, "models/puzzle4/hint.glb")
                         }
-                        placeObject(anchorNodePuzzle4, state4)
                     }
-                    2 -> placeObject(anchorNodePuzzle4, "models/solved.glb")
+                    2 -> {
+                        placeObject(anchorNodePuzzle4, "models/solved.glb")
+                        puzzle4Sub=3
+                        delay=10000
+                    }
                 }
                 Handler(Looper.getMainLooper()).postDelayed({
                     arFragment!!.arSceneView.scene.removeChild(anchorNodePuzzle4)
+                    anchorNodePuzzle4.anchor?.detach()
                     puzzle4Detected = false
-                }, 1000)
+                    anchorNodePuzzle4.parent = null
+                    anchorNodePuzzle4.anchor = null
+                    anchorNodePuzzle4.renderable = null
+                    if (puzzle4Sub==3){
+                        puzzle4Detected = true
+                        anchorNodePuzzle4.anchor?.detach()
+                        anchorNodePuzzle4.parent = null
+                        anchorNodePuzzle4.anchor = null
+                        anchorNodePuzzle4.renderable = null
+                        anchorNodePuzzle4.removeChild(anchorNodePuzzle4)
+                        reloadActivity()
+                    }
+                },delay.toLong())
             }
+
+
             if (!puzzle5Detected && augmentedImage.name == "puzzle5") {
+                var delay=1000
                 puzzle5Detected = true
                 when(puzzle5Sub)
                 {
                     0 -> placeObject(anchorNodePuzzle5, "models/nactive.glb")
-                    1 -> placeObject(anchorNodePuzzle5, "models/hint.glb")
-                    2 -> placeObject(anchorNodePuzzle5, "models/solved.glb")
+                    1 -> {
+                        when(shake)
+                        {
+                            false -> placeObject(anchorNodePuzzle5, "models/shake.glb")
+                            true -> placeObject(anchorNodePuzzle5, "models/puzzle5/hint.glb")
+                        }
+                    }
+                    2 -> {
+                        placeObject(anchorNodePuzzle5, "models/solved.glb")
+                        puzzle5Sub=3
+                        delay=10000
+                    }
                 }
                 Handler(Looper.getMainLooper()).postDelayed({
                     arFragment!!.arSceneView.scene.removeChild(anchorNodePuzzle5)
+                    anchorNodePuzzle5.anchor?.detach()
                     puzzle5Detected = false
-                }, 1000)
+                    anchorNodePuzzle5.parent = null
+                    anchorNodePuzzle5.anchor = null
+                    anchorNodePuzzle5.renderable = null
+                    if (puzzle5Sub==3){
+                        puzzle5Detected = true
+                        anchorNodePuzzle5.anchor?.detach()
+                        anchorNodePuzzle5.parent = null
+                        anchorNodePuzzle5.anchor = null
+                        anchorNodePuzzle5.renderable = null
+                        anchorNodePuzzle5.removeChild(anchorNodePuzzle5)
+                        reloadActivity()
+                    }
+                },delay.toLong())
             }
         }
     }

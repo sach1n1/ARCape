@@ -3,7 +3,6 @@ package com.google.ar.sceneform.samples.augmentedimages.mqtt
 import android.content.Context
 import android.util.Log
 import com.example.arcape.*
-import com.google.ar.sceneform.samples.augmentedimages.*
 import org.eclipse.paho.android.service.MqttAndroidClient
 import org.eclipse.paho.client.mqttv3.*
 import org.eclipse.paho.client.mqttv3.MqttClient
