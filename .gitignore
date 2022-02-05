@@ -17,3 +17,4 @@ local.properties
 core/build/
 sceneform/build/
 ux/build/
+app/release/
