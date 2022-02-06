@@ -21,6 +21,7 @@ import android.hardware.SensorManager
 import android.os.*
 import com.google.ar.core.*
 import com.google.ar.sceneform.AnchorNode
+import com.google.ar.sceneform.Node
 import com.google.ar.sceneform.Sceneform
 import com.google.ar.sceneform.math.Vector3
 import com.google.ar.sceneform.rendering.ModelRenderable
@@ -245,54 +246,47 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
             return
         }
         if (augmentedImage.trackingState == TrackingState.TRACKING ) {
-            val anchorNodePuzzle1 = AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose))
-            val anchorNodePuzzle2 = AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose))
-            val anchorNodePuzzle3 = AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose))
-            val anchorNodePuzzle4 = AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose))
-            val anchorNodePuzzle5 = AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose))
+            val nodePuzzle1 = AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose))
+            val anchorNodePuzzle = AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose))
 
             if (!puzzle1Detected && augmentedImage.name == "puzzle1") {
                 puzzle1Detected = true
                 var delay=1000
                 when (puzzle1Sub) {
-                    0 -> placeObject(anchorNodePuzzle1, "models/nactive.glb")
+                    0 -> placeObject(nodePuzzle1, "models/nactive.glb")
                     1 -> {
                         when(shake) {
-                            false -> placeObject(anchorNodePuzzle1, "models/shake.glb")
-                            true ->  placeObject(anchorNodePuzzle1, "models/puzzle1/hint1.glb")
+                            false -> placeObject(nodePuzzle1, "models/shake.glb")
+                            true ->  placeObject(nodePuzzle1, "models/puzzle1/hint1.glb")
                         }
                     }
                     2 -> {
                         when(shake){
-                            false -> placeObject(anchorNodePuzzle1, "models/shake.glb")
-                            true -> placeObject(anchorNodePuzzle1, "models/puzzle1/hint2.glb")
+                            false -> placeObject(nodePuzzle1, "models/shake.glb")
+                            true -> placeObject(nodePuzzle1, "models/puzzle1/hint2.glb")
                         }
                     }
                     3 -> {
                         when(shake){
-                            false -> placeObject(anchorNodePuzzle1, "models/shake.glb")
-                            true -> placeObject(anchorNodePuzzle1, "models/puzzle1/hint3.glb")
+                            false -> placeObject(nodePuzzle1, "models/shake.glb")
+                            true -> placeObject(nodePuzzle1, "models/puzzle1/hint3.glb")
                         }
                     }
                     4 -> {
-                        placeObject(anchorNodePuzzle1, "models/solved.glb")
+                        placeObject(nodePuzzle1, "models/solved.glb")
                         puzzle1Sub=5
                         delay=5000
                     }
                 }
                 Handler(Looper.getMainLooper()).postDelayed({
-                    anchorNodePuzzle1.anchor?.detach()
-                    anchorNodePuzzle1.parent = null
-                    anchorNodePuzzle1.anchor = null
-                    anchorNodePuzzle1.renderable = null
-                    arFragment!!.arSceneView.scene.removeChild(anchorNodePuzzle2)
+                    nodePuzzle1.anchor?.detach()
+                    nodePuzzle1.parent = null
+                    nodePuzzle1.anchor = null
+                    nodePuzzle1.renderable = null
+                    arFragment!!.arSceneView.scene.removeChild(anchorNodePuzzle)
                     puzzle1Detected = false
                     if (puzzle1Sub==5){
                         puzzle1Detected = true
-                        anchorNodePuzzle1.anchor?.detach()
-                        anchorNodePuzzle1.parent = null
-                        anchorNodePuzzle1.anchor = null
-                        anchorNodePuzzle1.renderable = null
                         val puzzle3 = Intent(
                             this,
                             MainActivity3::class.java
@@ -306,51 +300,52 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
 
             if (!puzzle2Detected && augmentedImage.name == "puzzle2") {
                 puzzle2Detected = true
-                placeObject(anchorNodePuzzle2, "models/nactive.glb")
+                placeObject(anchorNodePuzzle, "models/nactive.glb")
                 Handler(Looper.getMainLooper()).postDelayed({
-                    anchorNodePuzzle2.anchor?.detach()
-                    anchorNodePuzzle2.parent = null
-                    anchorNodePuzzle2.anchor = null
-                    anchorNodePuzzle2.renderable = null
-                    arFragment!!.arSceneView.scene.removeChild(anchorNodePuzzle2)
+                    anchorNodePuzzle.anchor?.detach()
+                    anchorNodePuzzle.parent = null
+                    anchorNodePuzzle.anchor = null
+                    anchorNodePuzzle.renderable = null
+                    arFragment!!.arSceneView.scene.removeChild(anchorNodePuzzle)
                 },5000)
             }
 
 
             if (!puzzle3Detected && augmentedImage.name == "puzzle3") {
-                placeObject(anchorNodePuzzle3, "models/nactive.glb")
+                puzzle3Detected = true
+                placeObject(anchorNodePuzzle, "models/nactive.glb")
                 Handler(Looper.getMainLooper()).postDelayed({
-                    anchorNodePuzzle3.anchor?.detach()
-                    anchorNodePuzzle3.parent = null
-                    anchorNodePuzzle3.anchor = null
-                    anchorNodePuzzle3.renderable = null
-                    arFragment!!.arSceneView.scene.removeChild(anchorNodePuzzle3)
+                    anchorNodePuzzle.anchor?.detach()
+                    anchorNodePuzzle.parent = null
+                    anchorNodePuzzle.anchor = null
+                    anchorNodePuzzle.renderable = null
+                    arFragment!!.arSceneView.scene.removeChild(anchorNodePuzzle)
                 },5000)
             }
 
 
             if (!puzzle4Detected && augmentedImage.name == "puzzle4") {
                 puzzle4Detected = true
-                placeObject(anchorNodePuzzle4, "models/nactive.glb")
+                placeObject(anchorNodePuzzle, "models/nactive.glb")
                 Handler(Looper.getMainLooper()).postDelayed({
-                    anchorNodePuzzle4.anchor?.detach()
-                    anchorNodePuzzle4.parent = null
-                    anchorNodePuzzle4.anchor = null
-                    anchorNodePuzzle4.renderable = null
-                    arFragment!!.arSceneView.scene.removeChild(anchorNodePuzzle4)
+                    anchorNodePuzzle.anchor?.detach()
+                    anchorNodePuzzle.parent = null
+                    anchorNodePuzzle.anchor = null
+                    anchorNodePuzzle.renderable = null
+                    arFragment!!.arSceneView.scene.removeChild(anchorNodePuzzle)
                 },5000)
             }
 
 
             if (!puzzle5Detected && augmentedImage.name == "puzzle5") {
-                puzzle3Detected = true
-                placeObject(anchorNodePuzzle3, "models/nactive.glb")
+                puzzle5Detected = true
+                placeObject(anchorNodePuzzle, "models/nactive.glb")
                 Handler(Looper.getMainLooper()).postDelayed({
-                    anchorNodePuzzle5.anchor?.detach()
-                    anchorNodePuzzle5.parent = null
-                    anchorNodePuzzle5.anchor = null
-                    anchorNodePuzzle5.renderable = null
-                    arFragment!!.arSceneView.scene.removeChild(anchorNodePuzzle5)
+                    anchorNodePuzzle.anchor?.detach()
+                    anchorNodePuzzle.parent = null
+                    anchorNodePuzzle.anchor = null
+                    anchorNodePuzzle.renderable = null
+                    arFragment!!.arSceneView.scene.removeChild(anchorNodePuzzle)
                 },5000)
             }
         }

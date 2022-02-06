@@ -239,57 +239,54 @@ class MainActivity5 : AppCompatActivity(), FragmentOnAttachListener, OnSessionCo
             return
         }
         if (augmentedImage.trackingState == TrackingState.TRACKING ) {
-            val anchorNodePuzzle1 = AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose))
-            val anchorNodePuzzle2 = AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose))
-            val anchorNodePuzzle3 = AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose))
-            val anchorNodePuzzle4 = AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose))
-            val anchorNodePuzzle5 = AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose))
+            val NodePuzzle5 = AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose))
+            val anchorNodePuzzle = AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose))
 
             if (!puzzle1Detected && augmentedImage.name == "puzzle1") {
                 puzzle1Detected = true
-                placeObject(anchorNodePuzzle1, "models/solved.glb")
+                placeObject(anchorNodePuzzle, "models/solved.glb")
                 Handler(Looper.getMainLooper()).postDelayed({
-                    anchorNodePuzzle1.anchor?.detach()
-                    anchorNodePuzzle1.parent = null
-                    anchorNodePuzzle1.anchor = null
-                    anchorNodePuzzle1.renderable = null
-                    arFragment!!.arSceneView.scene.removeChild(anchorNodePuzzle1)
+                    anchorNodePuzzle.anchor?.detach()
+                    anchorNodePuzzle.parent = null
+                    anchorNodePuzzle.anchor = null
+                    anchorNodePuzzle.renderable = null
+                    arFragment!!.arSceneView.scene.removeChild(anchorNodePuzzle)
                 },5000)
             }
 
             if (!puzzle2Detected && augmentedImage.name == "puzzle2") {
                 puzzle2Detected = true
-                placeObject(anchorNodePuzzle2, "models/solved.glb")
+                placeObject(anchorNodePuzzle, "models/solved.glb")
                 Handler(Looper.getMainLooper()).postDelayed({
-                    anchorNodePuzzle2.anchor?.detach()
-                    anchorNodePuzzle2.parent = null
-                    anchorNodePuzzle2.anchor = null
-                    anchorNodePuzzle2.renderable = null
-                    arFragment!!.arSceneView.scene.removeChild(anchorNodePuzzle2)
+                    anchorNodePuzzle.anchor?.detach()
+                    anchorNodePuzzle.parent = null
+                    anchorNodePuzzle.anchor = null
+                    anchorNodePuzzle.renderable = null
+                    arFragment!!.arSceneView.scene.removeChild(anchorNodePuzzle)
                 },5000)
             }
 
             if (!puzzle3Detected && augmentedImage.name == "puzzle3") {
                 puzzle3Detected = true
-                placeObject(anchorNodePuzzle3, "models/solved.glb")
+                placeObject(anchorNodePuzzle, "models/solved.glb")
                 Handler(Looper.getMainLooper()).postDelayed({
-                    anchorNodePuzzle3.anchor?.detach()
-                    anchorNodePuzzle3.parent = null
-                    anchorNodePuzzle3.anchor = null
-                    anchorNodePuzzle3.renderable = null
-                    arFragment!!.arSceneView.scene.removeChild(anchorNodePuzzle3)
+                    anchorNodePuzzle.anchor?.detach()
+                    anchorNodePuzzle.parent = null
+                    anchorNodePuzzle.anchor = null
+                    anchorNodePuzzle.renderable = null
+                    arFragment!!.arSceneView.scene.removeChild(anchorNodePuzzle)
                 },5000)
             }
 
             if (!puzzle4Detected && augmentedImage.name == "puzzle4") {
                 puzzle4Detected = true
-                placeObject(anchorNodePuzzle4, "models/solved.glb")
+                placeObject(anchorNodePuzzle, "models/solved.glb")
                 Handler(Looper.getMainLooper()).postDelayed({
-                    anchorNodePuzzle4.anchor?.detach()
-                    anchorNodePuzzle4.parent = null
-                    anchorNodePuzzle4.anchor = null
-                    anchorNodePuzzle4.renderable = null
-                    arFragment!!.arSceneView.scene.removeChild(anchorNodePuzzle4)
+                    anchorNodePuzzle.anchor?.detach()
+                    anchorNodePuzzle.parent = null
+                    anchorNodePuzzle.anchor = null
+                    anchorNodePuzzle.renderable = null
+                    arFragment!!.arSceneView.scene.removeChild(anchorNodePuzzle)
                 },5000)
             }
 
@@ -299,34 +296,29 @@ class MainActivity5 : AppCompatActivity(), FragmentOnAttachListener, OnSessionCo
                 puzzle5Detected = true
                 when(puzzle5Sub)
                 {
-                    0 -> placeObject(anchorNodePuzzle5, "models/nactive.glb")
+                    0 -> placeObject(NodePuzzle5, "models/nactive.glb")
                     1 -> {
                         when(shake)
                         {
-                            false -> placeObject(anchorNodePuzzle5, "models/shake.glb")
-                            true -> placeObject(anchorNodePuzzle5, "models/puzzle5/hint.glb")
+                            false -> placeObject(NodePuzzle5, "models/shake.glb")
+                            true -> placeObject(NodePuzzle5, "models/puzzle5/hint.glb")
                         }
                     }
                     2 -> {
-                        placeObject(anchorNodePuzzle5, "models/solved.glb")
+                        placeObject(NodePuzzle5, "models/solved.glb")
                         puzzle5Sub=3
                         delay=5000
                     }
                 }
                 Handler(Looper.getMainLooper()).postDelayed({
-                    arFragment!!.arSceneView.scene.removeChild(anchorNodePuzzle5)
-                    anchorNodePuzzle5.anchor?.detach()
+                    arFragment!!.arSceneView.scene.removeChild(NodePuzzle5)
+                    NodePuzzle5.anchor?.detach()
                     puzzle5Detected = false
-                    anchorNodePuzzle5.parent = null
-                    anchorNodePuzzle5.anchor = null
-                    anchorNodePuzzle5.renderable = null
+                    NodePuzzle5.parent = null
+                    NodePuzzle5.anchor = null
+                    NodePuzzle5.renderable = null
                     if (puzzle5Sub==3){
                         puzzle5Detected = true
-                        anchorNodePuzzle5.anchor?.detach()
-                        anchorNodePuzzle5.parent = null
-                        anchorNodePuzzle5.anchor = null
-                        anchorNodePuzzle5.renderable = null
-                        anchorNodePuzzle5.removeChild(anchorNodePuzzle5)
                         val exit = Intent(
                             this,
                             ExitSplashScreenActivity::class.java
