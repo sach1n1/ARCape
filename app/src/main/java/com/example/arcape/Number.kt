@@ -6,7 +6,7 @@ import android.util.Log
 import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
-import com.google.ar.sceneform.samples.augmentedimages.mqtt.MqttClientHelper
+import com.example.arcape.mqtt.MqttClientHelper
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken
 import org.eclipse.paho.client.mqttv3.MqttCallbackExtended
 import org.eclipse.paho.client.mqttv3.MqttMessage
@@ -53,9 +53,9 @@ class Number : AppCompatActivity() {
         )
         //made changes in MQTT Helper to allow topic retain
         val gameOptionsString = "{\"participants\": $participants, \"duration\": $duration, \"skipTo\": \"\"}"
-        //Modify the topics (for 1 Game Control)
         mqttClientPub.publish("op/gameOptions",gameOptionsString,1,true)
         mqttClientPub.publish("op/gameControl","START",1,true)
+        mqttClientPub.publish("env/powerFail","INIT", 1,true)
         startActivity(startAR)
         this.finish()
     }

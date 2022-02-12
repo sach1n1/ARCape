@@ -9,26 +9,29 @@ import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.viewpager.widget.PagerAdapter
 
-class ViewPagerAdapter(val context: Context): PagerAdapter() {
+class ViewPagerAdapter(private val context: Context): PagerAdapter() {
     var layoutInflater: LayoutInflater? = null
 
     //image array
 
-    val imageArray = arrayOf(
+    private val imageArray = arrayOf(
         R.drawable.hello,
         R.drawable.puzzle,
+        R.drawable.attention,
         R.drawable.scan
     )
 
-    val headArray = arrayOf(
+    private val headArray = arrayOf(
         "Hello!!",
         "The task",
+        "Attention!",
         "Scan Around"
     )
 
-    val descriptionArray = arrayOf(
+    private val descriptionArray = arrayOf(
         "Welcome to the Smart Escape Room.",
         "Use your skills and solve the puzzles and get to the Control Room.",
+        "Please don't lock the phone or put the phone down!!",
         "Scan the images to get hints"
     )
 

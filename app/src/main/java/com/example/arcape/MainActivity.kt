@@ -1,6 +1,7 @@
 package com.example.arcape
 
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import android.util.Log
 import android.view.View
@@ -13,17 +14,14 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentOnAttachListener
-import android.hardware.Sensor
-import android.hardware.SensorEvent
-import android.hardware.SensorEventListener
-import android.hardware.SensorManager
 import android.os.*
+import android.view.MotionEvent
 import com.google.ar.core.*
 import com.google.ar.sceneform.AnchorNode
 import com.google.ar.sceneform.Sceneform
 import com.google.ar.sceneform.math.Vector3
 import com.google.ar.sceneform.rendering.ModelRenderable
-import com.google.ar.sceneform.samples.augmentedimages.mqtt.MqttClientHelper
+import com.example.arcape.mqtt.MqttClientHelper
 import com.google.ar.sceneform.ux.ArFragment
 import com.google.ar.sceneform.ux.BaseArFragment.OnSessionConfigurationListener
 import com.google.ar.sceneform.ux.TransformableNode
@@ -49,12 +47,6 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
     private var puzzle4Detected = false
     private var puzzle5Detected = false
     private var database: AugmentedImageDatabase? = null
-
-
-    private var sensorManager: SensorManager? = null
-    private var acceleration = 0f
-    private var currentAcceleration = 0f
-    private var lastAcceleration = 0f
 
     var puzzle1Sub = 0
     var puzzle2Sub = 0
@@ -87,16 +79,9 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
             mqttClient.subscribe("game/puzzle3")
             mqttClient.subscribe("game/puzzle4")
             mqttClient.subscribe("game/puzzle5")
+            mqttClient.subscribe("env/powerFail")
+            mqttClient.subscribe("op/gameControl")
         }, 2000)
-
-
-
-        sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
-        Objects.requireNonNull(sensorManager)?.registerListener(sensorListener, sensorManager!!
-            .getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_NORMAL)
-        acceleration = 10f
-        currentAcceleration = SensorManager.GRAVITY_EARTH
-        lastAcceleration = SensorManager.GRAVITY_EARTH
 
         supportFragmentManager.addFragmentOnAttachListener(this)
         if (savedInstanceState == null) {
@@ -108,16 +93,15 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
         }
     }
 
-    override fun onResume() {
-        sensorManager?.registerListener(sensorListener, sensorManager!!.getDefaultSensor(
-            Sensor .TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_NORMAL
-        )
-        super.onResume()
-    }
-
-    override fun onPause() {
-        sensorManager!!.unregisterListener(sensorListener)
-        super.onPause()
+    override fun dispatchTouchEvent(event: MotionEvent): Boolean {
+        when(event.action)
+        {
+            MotionEvent.ACTION_UP -> {
+                Toast.makeText(applicationContext, "Tap registered", Toast.LENGTH_SHORT).show()
+                if (!shake) shake = true
+            }
+        }
+        return true
     }
 
     override fun onBackPressed() {
@@ -125,21 +109,14 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
         this.finish()
     }
 
-    private val sensorListener: SensorEventListener = object : SensorEventListener {
-        override fun onSensorChanged(event: SensorEvent) {
-            val x = event.values[0]
-            val y = event.values[1]
-            val z = event.values[2]
-            lastAcceleration = currentAcceleration
-            currentAcceleration = kotlin.math.sqrt((x * x + y * y + z * z).toDouble()).toFloat()
-            val delta: Float = currentAcceleration - lastAcceleration
-            acceleration = acceleration * 0.9f + delta
-            if (acceleration > 4) {
-                Toast.makeText(applicationContext, "Shake event detected", Toast.LENGTH_SHORT).show()
-                if (!shake) shake=true
-            }
-        }
-        override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {}
+    private fun launchExit()
+    {
+        val startExit = Intent(
+            this,
+            ExitSplashScreenActivity::class.java
+        )
+        startActivity(startExit)
+        this.finish()
     }
 
     private fun setMqttCallBack() {
@@ -154,6 +131,16 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
             override fun messageArrived(topic: String, mqttMessage: MqttMessage) {
                 Log.w("Debug", "Message received from host '$MQTT_HOST': $mqttMessage")
                 val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+                if (topic == "env/powerFail" && "$mqttMessage" == "INIT" )
+                {
+                    mqttClient.publish("env/powerFail","{\"method\": \"status\", \"state\": \"solved\"}",1,true)
+                }
+
+                if (topic == "op/gameControl" && "$mqttMessage" == "SOLVED" )
+                {
+                    launchExit()
+                }
+
                 if(topic == "game/puzzle1")
                 {
                     when("$mqttMessage")
@@ -174,7 +161,12 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
                             vibrator.vibrate(500)
                             shake = false
                         }
-                        "Solved" -> puzzle1Sub = 4
+                        "Solved" -> {
+                            puzzle1Sub = 4
+                            mqttClient.publish("game/puzzle1","Done",1,true)
+                            reloadActivity()
+                        }
+                        "Done" -> puzzle1Sub = 5
                     }
                 }
                 if(topic == "game/puzzle2")
@@ -187,7 +179,12 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
                             vibrator.vibrate(500)
                             shake = false
                         }
-                        "Solved" -> puzzle2Sub = 2
+                        "Solved" -> {
+                            puzzle2Sub = 2
+                            mqttClient.publish("game/puzzle2","Done",1,true)
+                            reloadActivity()
+                        }
+                        "Done" -> puzzle2Sub = 3
                     }
                 }
                 if(topic == "game/puzzle3")
@@ -225,7 +222,12 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
                             vibrator.vibrate(500)
                             shake = false
                         }
-                        "Solved" -> puzzle3Sub = 7
+                        "Solved" -> {
+                            puzzle3Sub = 7
+                            mqttClient.publish("game/puzzle3","Done",1,true)
+                            reloadActivity()
+                        }
+                        "Done" -> puzzle3Sub = 8
                     }
                 }
                 if(topic == "game/puzzle4")
@@ -238,7 +240,12 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
                             vibrator.vibrate(500)
                             shake = false
                         }
-                        "Solved" -> puzzle4Sub = 2
+                        "Solved" -> {
+                            puzzle4Sub = 2
+                            mqttClient.publish("game/puzzle4","Done",1,true)
+                            reloadActivity()
+                        }
+                        "Done" -> puzzle4Sub = 3
                     }
                 }
                 if(topic == "game/puzzle5")
@@ -251,7 +258,12 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
                             vibrator.vibrate(500)
                             shake=false
                         }
-                        "Solved" -> puzzle5Sub = 2
+                        "Solved" -> {
+                            puzzle5Sub = 2
+                            mqttClient.publish("game/puzzle5","Done",1,true)
+                            reloadActivity()
+                        }
+                        "Done" -> puzzle5Sub = 3
                     }
                 }
             }
@@ -287,8 +299,8 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
     }
 
     private fun reloadActivity() {
+        this.finish()
         startActivity(intent)
-        finish()
         //overridePendingTransition(0, 0)
     }
 
@@ -345,26 +357,26 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
                     0 -> placeObject(anchorNodePuzzle1, "models/nactive.glb")
                     1 -> {
                         when(shake) {
-                            false -> placeObject(anchorNodePuzzle1, "models/shake.glb")
+                            false -> placeObject(anchorNodePuzzle1, "models/tap.glb")
                             true ->  placeObject(anchorNodePuzzle1, "models/puzzle1/hint1.glb")
                         }
                     }
                     2 -> {
                         when(shake){
-                            false -> placeObject(anchorNodePuzzle1, "models/shake.glb")
+                            false -> placeObject(anchorNodePuzzle1, "models/tap.glb")
                             true -> placeObject(anchorNodePuzzle1, "models/puzzle1/hint2.glb")
                         }
                     }
                     3 -> {
                         when(shake){
-                            false -> placeObject(anchorNodePuzzle1, "models/shake.glb")
+                            false -> placeObject(anchorNodePuzzle1, "models/tap.glb")
                             true -> placeObject(anchorNodePuzzle1, "models/puzzle1/hint3.glb")
                         }
                     }
-                    4 -> {
+                    5 -> {
                         placeObject(anchorNodePuzzle1, "models/solved.glb")
-                        puzzle1Sub=5
-                        delay=10000
+                        puzzle1Sub=6
+                        delay=5000
                     }
                 }
                 Handler(Looper.getMainLooper()).postDelayed({
@@ -374,14 +386,8 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
                     anchorNodePuzzle1.renderable = null
                     arFragment!!.arSceneView.scene.removeChild(anchorNodePuzzle2)
                     puzzle1Detected = false
-                    if (puzzle1Sub==5){
+                    if (puzzle1Sub==6){
                         puzzle1Detected = true
-                        anchorNodePuzzle1.anchor?.detach()
-                        anchorNodePuzzle1.parent = null
-                        anchorNodePuzzle1.anchor = null
-                        anchorNodePuzzle1.renderable = null
-                        anchorNodePuzzle1.removeChild(anchorNodePuzzle1)
-                        reloadActivity()
                     }
                 }, delay.toLong())
             }
@@ -395,14 +401,14 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
                     0 -> placeObject(anchorNodePuzzle2, "models/nactive.glb")
                     1 -> {
                         when(shake) {
-                            false -> placeObject(anchorNodePuzzle2, "models/shake.glb")
+                            false -> placeObject(anchorNodePuzzle2, "models/tap.glb")
                             true -> placeObject(anchorNodePuzzle2, "models/puzzle2/hint.glb")
                         }
                     }
-                    2 -> {
+                    3 -> {
                         placeObject(anchorNodePuzzle2, "models/solved.glb")
-                        puzzle2Sub=3
-                        delay=10000
+                        puzzle2Sub=4
+                        delay=5000
                     }
                 }
                 Handler(Looper.getMainLooper()).postDelayed({
@@ -412,14 +418,8 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
                     anchorNodePuzzle2.renderable = null
                     arFragment!!.arSceneView.scene.removeChild(anchorNodePuzzle2)
                     puzzle2Detected = false
-                    if (puzzle2Sub==3){
+                    if (puzzle2Sub==4){
                         puzzle2Detected = true
-                        anchorNodePuzzle2.anchor?.detach()
-                        anchorNodePuzzle2.parent = null
-                        anchorNodePuzzle2.anchor = null
-                        anchorNodePuzzle2.renderable = null
-                        anchorNodePuzzle2.removeChild(anchorNodePuzzle2)
-                        reloadActivity()
                     }
                 },delay.toLong())
             }
@@ -433,44 +433,44 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
                     0 -> placeObject(anchorNodePuzzle3, "models/nactive.glb")
                     1 -> {
                         when(shake){
-                            false -> placeObject(anchorNodePuzzle3, "models/shake.glb")
+                            false -> placeObject(anchorNodePuzzle3, "models/tap.glb")
                             true -> placeObject(anchorNodePuzzle3, "models/puzzle3/antenna.glb")
                         }
                     }
                     2 -> {
                         when(shake){
-                            false -> placeObject(anchorNodePuzzle3, "models/shake.glb")
+                            false -> placeObject(anchorNodePuzzle3, "models/tap.glb")
                             true -> placeObject(anchorNodePuzzle3, "models/puzzle3/map1.glb")
                         }
                     }
                     3 -> {
                         when(shake){
-                            false -> placeObject(anchorNodePuzzle3, "models/shake.glb")
+                            false -> placeObject(anchorNodePuzzle3, "models/tap.glb")
                             true -> placeObject(anchorNodePuzzle3, "models/puzzle3/map2.glb")
                         }
                     }
                     4 -> {
                         when(shake){
-                            false -> placeObject(anchorNodePuzzle3, "models/shake.glb")
+                            false -> placeObject(anchorNodePuzzle3, "models/tap.glb")
                             true -> placeObject(anchorNodePuzzle3, "models/puzzle3/touch1.glb")
                         }
                     }
                     5 -> {
                         when(shake){
-                            false -> placeObject(anchorNodePuzzle3, "models/shake.glb")
+                            false -> placeObject(anchorNodePuzzle3, "models/tap.glb")
                             true -> placeObject(anchorNodePuzzle3, "models/puzzle3/touch2.glb")
                         }
                     }
                     6 -> {
                         when(shake){
-                            false -> placeObject(anchorNodePuzzle3, "models/shake.glb")
+                            false -> placeObject(anchorNodePuzzle3, "models/tap.glb")
                             true -> placeObject(anchorNodePuzzle3, "models/puzzle3/touch3.glb")
                         }
                     }
-                    7 -> {
+                    8 -> {
                         placeObject(anchorNodePuzzle3, "models/solved.glb")
-                        puzzle3Sub=8
-                        delay=10000
+                        puzzle3Sub=9
+                        delay=5000
                     }
                 }
                 Handler(Looper.getMainLooper()).postDelayed({
@@ -480,14 +480,8 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
                     anchorNodePuzzle3.parent = null
                     anchorNodePuzzle3.anchor = null
                     anchorNodePuzzle3.renderable = null
-                    if (puzzle3Sub==8){
+                    if (puzzle3Sub==9){
                         puzzle3Detected = true
-                        anchorNodePuzzle3.anchor?.detach()
-                        anchorNodePuzzle3.parent = null
-                        anchorNodePuzzle3.anchor = null
-                        anchorNodePuzzle3.renderable = null
-                        anchorNodePuzzle3.removeChild(anchorNodePuzzle3)
-                        reloadActivity()
                     }
                 }, delay.toLong())
             }
@@ -502,14 +496,14 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
                     1 -> {
                         when(shake)
                         {
-                            false -> placeObject(anchorNodePuzzle4, "models/shake.glb")
+                            false -> placeObject(anchorNodePuzzle4, "models/tap.glb")
                             true -> placeObject(anchorNodePuzzle4, "models/puzzle4/hint.glb")
                         }
                     }
-                    2 -> {
+                    3 -> {
                         placeObject(anchorNodePuzzle4, "models/solved.glb")
-                        puzzle4Sub=3
-                        delay=10000
+                        puzzle4Sub=4
+                        delay=5000
                     }
                 }
                 Handler(Looper.getMainLooper()).postDelayed({
@@ -519,14 +513,8 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
                     anchorNodePuzzle4.parent = null
                     anchorNodePuzzle4.anchor = null
                     anchorNodePuzzle4.renderable = null
-                    if (puzzle4Sub==3){
+                    if (puzzle4Sub==4){
                         puzzle4Detected = true
-                        anchorNodePuzzle4.anchor?.detach()
-                        anchorNodePuzzle4.parent = null
-                        anchorNodePuzzle4.anchor = null
-                        anchorNodePuzzle4.renderable = null
-                        anchorNodePuzzle4.removeChild(anchorNodePuzzle4)
-                        reloadActivity()
                     }
                 },delay.toLong())
             }
@@ -541,14 +529,14 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
                     1 -> {
                         when(shake)
                         {
-                            false -> placeObject(anchorNodePuzzle5, "models/shake.glb")
+                            false -> placeObject(anchorNodePuzzle5, "models/tap.glb")
                             true -> placeObject(anchorNodePuzzle5, "models/puzzle5/hint.glb")
                         }
                     }
-                    2 -> {
+                    3 -> {
                         placeObject(anchorNodePuzzle5, "models/solved.glb")
-                        puzzle5Sub=3
-                        delay=10000
+                        puzzle5Sub=4
+                        delay=5000
                     }
                 }
                 Handler(Looper.getMainLooper()).postDelayed({
@@ -558,14 +546,8 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
                     anchorNodePuzzle5.parent = null
                     anchorNodePuzzle5.anchor = null
                     anchorNodePuzzle5.renderable = null
-                    if (puzzle5Sub==3){
+                    if (puzzle5Sub==4){
                         puzzle5Detected = true
-                        anchorNodePuzzle5.anchor?.detach()
-                        anchorNodePuzzle5.parent = null
-                        anchorNodePuzzle5.anchor = null
-                        anchorNodePuzzle5.renderable = null
-                        anchorNodePuzzle5.removeChild(anchorNodePuzzle5)
-                        reloadActivity()
                     }
                 },delay.toLong())
             }

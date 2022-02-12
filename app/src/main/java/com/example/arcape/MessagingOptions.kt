@@ -1,9 +1,6 @@
 package com.example.arcape
 
 // Fill in your Broker Details Here.
-
-//const val CLIENT_USER_NAME = ""
-//const val CLIENT_PASSWORD = ""
 const val MQTT_HOST = "tcp://earth.informatik.uni-freiburg.de:1883"
 
 // Other options

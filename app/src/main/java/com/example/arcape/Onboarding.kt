@@ -32,13 +32,10 @@ class Onboarding : AppCompatActivity() {
              ) {}
 
              override fun onPageSelected(position: Int) {
-                 if(position==2)
+                 if(position==3)
                  {
                      startBtn.visibility= View.VISIBLE
                  }
-//                 else{
-//                     startBtn.visibility= View.INVISIBLE
-//                 }
              }
 
              override fun onPageScrollStateChanged(state: Int) {}

@@ -1,4 +1,4 @@
-package com.google.ar.sceneform.samples.augmentedimages.mqtt
+package com.example.arcape.mqtt
 
 import android.content.Context
 import android.util.Log
