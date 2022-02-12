@@ -71,13 +71,13 @@ class Number : AppCompatActivity() {
         val startBtn4 = findViewById<Button>(R.id.startBtn4)
 
         startBtn2.setOnClickListener {
-            startMainAR(2,3600)
+            startMainAR(2,60)
         }
         startBtn3.setOnClickListener {
-            startMainAR(3,2400)
+            startMainAR(3,60)
         }
         startBtn4.setOnClickListener {
-            startMainAR(4,1200)
+            startMainAR(4,60)
         }
     }
 }

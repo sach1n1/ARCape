@@ -301,11 +301,11 @@ class MainActivity4 : AppCompatActivity(), FragmentOnAttachListener, OnSessionCo
                     NodePuzzle4.renderable = null
                     if (puzzle4Sub==3){
                         puzzle4Detected = true
-                        val puzzle5 = Intent(
+                        val exit = Intent(
                             this,
-                            MainActivity5::class.java
+                            ExitSplashScreenActivity::class.java
                         )
-                        startActivity(puzzle5)
+                        startActivity(exit)
                         this.finish()
                     }
                 },delay.toLong())

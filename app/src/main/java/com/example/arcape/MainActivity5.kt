@@ -83,7 +83,6 @@ class MainActivity5 : AppCompatActivity(), FragmentOnAttachListener, OnSessionCo
         }, 2000)
 
 
-
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
         Objects.requireNonNull(sensorManager)?.registerListener(sensorListener, sensorManager!!
             .getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_NORMAL)
@@ -99,6 +98,15 @@ class MainActivity5 : AppCompatActivity(), FragmentOnAttachListener, OnSessionCo
                     .commit()
             }
         }
+    }
+
+    fun switchAct(){
+        val puzzle5 = Intent(
+            this,
+            MainActivity5::class.java
+        )
+        startActivity(puzzle5)
+        this.finish()
     }
 
     override fun onResume() {
@@ -319,11 +327,11 @@ class MainActivity5 : AppCompatActivity(), FragmentOnAttachListener, OnSessionCo
                     NodePuzzle5.renderable = null
                     if (puzzle5Sub==3){
                         puzzle5Detected = true
-                        val exit = Intent(
+                        val puzzle3 = Intent(
                             this,
-                            ExitSplashScreenActivity::class.java
+                            MainActivity3::class.java
                         )
-                        startActivity(exit)
+                        startActivity(puzzle3)
                         this.finish()
                     }
                 },delay.toLong())

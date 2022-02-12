@@ -94,6 +94,13 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
         currentAcceleration = SensorManager.GRAVITY_EARTH
         lastAcceleration = SensorManager.GRAVITY_EARTH
 
+        Handler(Looper.getMainLooper()).postDelayed({
+        val powerFailString = "{\"method\": \"status\", \"state\": \"solved\"}"
+        //Modify the topics (for 1 Game Control)
+        mqttClient.publish("env/powerfail", powerFailString,1,true)
+        }, 5000)
+
+
         supportFragmentManager.addFragmentOnAttachListener(this)
         if (savedInstanceState == null) {
             if (Sceneform.isSupported(this)) {
@@ -172,6 +179,7 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
                         puzzle1Sub = 4
                         val pattern = longArrayOf(0, 200, 300, 200, 300)
                         vibrator.vibrate(pattern,-1)
+                        switchAct()
                     }
                 }
             }
@@ -180,6 +188,17 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
             }
         })
     }
+
+    fun switchAct(){
+        val puzzle5 = Intent(
+            this,
+            MainActivity5::class.java
+        )
+        startActivity(puzzle5)
+        this.finish()
+    }
+
+
 
     override fun onAttachFragment(fragmentManager: FragmentManager, fragment: Fragment) {
         if (fragment.id == R.id.arFragment) {
@@ -245,7 +264,8 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
         if (puzzle1Detected && puzzle2Detected && puzzle3Detected && puzzle4Detected && puzzle5Detected) {
             return
         }
-        if (augmentedImage.trackingState == TrackingState.TRACKING ) {
+        if (augmentedImage.trackingState == TrackingState.TRACKING) {
+
             val nodePuzzle1 = AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose))
             val anchorNodePuzzle = AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose))
 
@@ -287,11 +307,11 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
                     puzzle1Detected = false
                     if (puzzle1Sub==5){
                         puzzle1Detected = true
-                        val puzzle3 = Intent(
+                        val puzzle5 = Intent(
                             this,
-                            MainActivity3::class.java
+                            MainActivity5::class.java
                         )
-                        startActivity(puzzle3)
+                        startActivity(puzzle5)
                         this.finish()
                     }
                 }, delay.toLong())

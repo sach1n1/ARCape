@@ -47,8 +47,6 @@ class MqttClientHelper(context: Context?) {
         val mqttConnectOptions = MqttConnectOptions()
         mqttConnectOptions.isAutomaticReconnect = CONNECTION_RECONNECT
         mqttConnectOptions.isCleanSession = CONNECTION_CLEAN_SESSION
-        //mqttConnectOptions.userName = CLIENT_USER_NAME
-        //mqttConnectOptions.password = CLIENT_PASSWORD.toCharArray()
         mqttConnectOptions.connectionTimeout = CONNECTION_TIMEOUT
         mqttConnectOptions.keepAliveInterval = CONNECTION_KEEP_ALIVE_INTERVAL
         try {
