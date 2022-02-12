@@ -134,8 +134,8 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
             currentAcceleration = kotlin.math.sqrt((x * x + y * y + z * z).toDouble()).toFloat()
             val delta: Float = currentAcceleration - lastAcceleration
             acceleration = acceleration * 0.9f + delta
-            if (acceleration > 12) {
-                //Toast.makeText(applicationContext, "Shake event detected", Toast.LENGTH_SHORT).show()
+            if (acceleration > 4) {
+                Toast.makeText(applicationContext, "Shake event detected", Toast.LENGTH_SHORT).show()
                 if (!shake) shake=true
             }
         }
@@ -289,7 +289,7 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
     private fun reloadActivity() {
         startActivity(intent)
         finish()
-        overridePendingTransition(0, 0)
+        //overridePendingTransition(0, 0)
     }
 
     override fun onDestroy() {
