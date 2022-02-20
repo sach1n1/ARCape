@@ -1,12 +1,8 @@
 package com.example.arcape
 
 import android.content.Context
-import android.graphics.BitmapFactory
+import android.content.Intent
 import android.net.Uri
-import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
-import android.os.Vibrator
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup.MarginLayoutParams
@@ -18,12 +14,14 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentOnAttachListener
+import android.os.*
+import android.view.MotionEvent
 import com.google.ar.core.*
 import com.google.ar.sceneform.AnchorNode
 import com.google.ar.sceneform.Sceneform
 import com.google.ar.sceneform.math.Vector3
 import com.google.ar.sceneform.rendering.ModelRenderable
-import com.google.ar.sceneform.samples.augmentedimages.mqtt.MqttClientHelper
+import com.example.arcape.mqtt.MqttClientHelper
 import com.google.ar.sceneform.ux.ArFragment
 import com.google.ar.sceneform.ux.BaseArFragment.OnSessionConfigurationListener
 import com.google.ar.sceneform.ux.TransformableNode
@@ -56,11 +54,7 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
     var puzzle4Sub = 0
     var puzzle5Sub = 0
 
-    var puzzle1Vib = 0
-    var puzzle2Vib = 0
-    var puzzle3Vib = 0
-    var puzzle4Vib = 0
-    var puzzle5Vib = 0
+    var shake = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -77,6 +71,18 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
             WindowInsetsCompat.CONSUMED
         }
 
+
+
+        Handler(Looper.getMainLooper()).postDelayed({
+            mqttClient.subscribe("game/puzzle1")
+            mqttClient.subscribe("game/puzzle2")
+            mqttClient.subscribe("game/puzzle3")
+            mqttClient.subscribe("game/puzzle4")
+            mqttClient.subscribe("game/puzzle5")
+            mqttClient.subscribe("env/powerFail")
+            mqttClient.subscribe("op/gameControl")
+        }, 2000)
+
         supportFragmentManager.addFragmentOnAttachListener(this)
         if (savedInstanceState == null) {
             if (Sceneform.isSupported(this)) {
@@ -87,8 +93,29 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
         }
     }
 
+    override fun dispatchTouchEvent(event: MotionEvent): Boolean {
+        when(event.action)
+        {
+            MotionEvent.ACTION_UP -> {
+                //Toast.makeText(applicationContext, "Tap registered", Toast.LENGTH_SHORT).show()
+                if (!shake) shake = true
+            }
+        }
+        return true
+    }
+
     override fun onBackPressed() {
         super.onBackPressed()
+        this.finish()
+    }
+
+    private fun launchExit()
+    {
+        val startExit = Intent(
+            this,
+            ExitSplashScreenActivity::class.java
+        )
+        startActivity(startExit)
         this.finish()
     }
 
@@ -103,13 +130,43 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
             @Throws(Exception::class)
             override fun messageArrived(topic: String, mqttMessage: MqttMessage) {
                 Log.w("Debug", "Message received from host '$MQTT_HOST': $mqttMessage")
+                val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+                if (topic == "env/powerFail" && "$mqttMessage" == "INIT" )
+                {
+                    mqttClient.publish("env/powerFail","{\"method\": \"status\", \"state\": \"solved\"}",1,true)
+                }
+
+                if (topic == "op/gameControl" && "$mqttMessage" == "SOLVED" )
+                {
+                    launchExit()
+                }
+
                 if(topic == "game/puzzle1")
                 {
                     when("$mqttMessage")
                     {
                         "Not Activated" -> puzzle1Sub = 0
-                        "Activated" -> puzzle1Sub = 1
-                        "Solved" -> puzzle1Sub = 2
+                        "Hint1" -> {
+                            puzzle1Sub = 1
+                            vibrator.vibrate(500)
+                            shake = false
+                        }
+                        "Hint2" -> {
+                            puzzle1Sub = 2
+                            vibrator.vibrate(500)
+                            shake = false
+                        }
+                        "Hint3" -> {
+                            puzzle1Sub = 3
+                            vibrator.vibrate(500)
+                            shake = false
+                        }
+                        "Solved" -> {
+                            puzzle1Sub = 4
+                            mqttClient.publish("game/puzzle1","Done",1,true)
+                            reloadActivity()
+                        }
+                        "Done" -> puzzle1Sub = 5
                     }
                 }
                 if(topic == "game/puzzle2")
@@ -117,8 +174,17 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
                     when("$mqttMessage")
                     {
                         "Not Activated" -> puzzle2Sub = 0
-                        "Activated" -> puzzle2Sub = 1
-                        "Solved" -> puzzle2Sub = 2
+                        "Activated" -> {
+                            puzzle2Sub = 1
+                            vibrator.vibrate(500)
+                            shake = false
+                        }
+                        "Solved" -> {
+                            puzzle2Sub = 2
+                            mqttClient.publish("game/puzzle2","Done",1,true)
+                            reloadActivity()
+                        }
+                        "Done" -> puzzle2Sub = 3
                     }
                 }
                 if(topic == "game/puzzle3")
@@ -126,8 +192,42 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
                     when("$mqttMessage")
                     {
                         "Not Activated" -> puzzle3Sub = 0
-                        "Activated" -> puzzle3Sub = 1
-                        "Solved" -> puzzle3Sub = 2
+                        "antenna_activate_1" -> {
+                            puzzle3Sub = 1
+                            vibrator.vibrate(500)
+                            shake = false
+                        }
+                        "map_activate_1" -> {
+                            puzzle3Sub = 2
+                            vibrator.vibrate(500)
+                            shake = false
+                        }
+                        "map_activate_2" -> {
+                            puzzle3Sub = 3
+                            vibrator.vibrate(500)
+                            shake = false
+                        }
+                        "touch_activate_1" -> {
+                            puzzle3Sub = 4
+                            vibrator.vibrate(500)
+                            shake = false
+                        }
+                        "touch_activate_2" -> {
+                            puzzle3Sub = 5
+                            vibrator.vibrate(500)
+                            shake = false
+                        }
+                        "touch_activate_3" -> {
+                            puzzle3Sub = 6
+                            vibrator.vibrate(500)
+                            shake = false
+                        }
+                        "Solved" -> {
+                            puzzle3Sub = 7
+                            mqttClient.publish("game/puzzle3","Done",1,true)
+                            reloadActivity()
+                        }
+                        "Done" -> puzzle3Sub = 8
                     }
                 }
                 if(topic == "game/puzzle4")
@@ -135,8 +235,17 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
                     when("$mqttMessage")
                     {
                         "Not Activated" -> puzzle4Sub = 0
-                        "Activated" -> puzzle4Sub = 1
-                        "Solved" -> puzzle4Sub = 2
+                        "Activated" -> {
+                            puzzle4Sub = 1
+                            vibrator.vibrate(500)
+                            shake = false
+                        }
+                        "Solved" -> {
+                            puzzle4Sub = 2
+                            mqttClient.publish("game/puzzle4","Done",1,true)
+                            reloadActivity()
+                        }
+                        "Done" -> puzzle4Sub = 3
                     }
                 }
                 if(topic == "game/puzzle5")
@@ -144,8 +253,17 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
                     when("$mqttMessage")
                     {
                         "Not Activated" -> puzzle5Sub = 0
-                        "Activated" -> puzzle5Sub = 1
-                        "Solved" -> puzzle5Sub = 2
+                        "Activated" -> {
+                            puzzle5Sub = 1
+                            vibrator.vibrate(500)
+                            shake=false
+                        }
+                        "Solved" -> {
+                            puzzle5Sub = 2
+                            mqttClient.publish("game/puzzle5","Done",1,true)
+                            reloadActivity()
+                        }
+                        "Done" -> puzzle5Sub = 3
                     }
                 }
             }
@@ -170,13 +288,6 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
         val inputStream = assets.open("myimages5.imgdb")
         database= AugmentedImageDatabase.deserialize(session,inputStream)
 
-        //If you want to generate database on the go
-        /*database = AugmentedImageDatabase(session)
-        val padlock = BitmapFactory.decodeResource(resources, R.drawable.padlock)
-        val robotImage = BitmapFactory.decodeResource(resources, R.drawable.robot)
-        database!!.addImage("robot", robotImage)
-        database!!.addImage("padlock", padlock)*/
-
         config.augmentedImageDatabase = database
 
         // Check for image detection
@@ -185,6 +296,16 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
                 augmentedImage
             )
         }
+    }
+
+    private fun reloadActivity() {
+        val reloadThis = Intent(
+            this,
+            MainActivity::class.java
+        )
+        startActivity(reloadThis)
+        this.finish()
+        //overridePendingTransition(0, 0)
     }
 
     override fun onDestroy() {
@@ -214,7 +335,7 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
             .exceptionally {
                 Toast.makeText(
                     this,
-                    "Unable to load rabbit model",
+                    "Unable to load model",
                     Toast.LENGTH_LONG
                 )
                     .show()
@@ -227,116 +348,213 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
             return
         }
         if (augmentedImage.trackingState == TrackingState.TRACKING ) {
+
             val anchorNodePuzzle1 = AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose))
             val anchorNodePuzzle2 = AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose))
             val anchorNodePuzzle3 = AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose))
             val anchorNodePuzzle4 = AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose))
             val anchorNodePuzzle5 = AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose))
-            val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+
             if (!puzzle1Detected && augmentedImage.name == "puzzle1") {
                 puzzle1Detected = true
-                val topic = "game/puzzle1"
-                mqttClient.subscribe(topic)
-                when(puzzle1Sub)
-                {
+                var delay=1000
+                when (puzzle1Sub) {
                     0 -> placeObject(anchorNodePuzzle1, "models/nactive.glb")
                     1 -> {
-                        placeObject(anchorNodePuzzle1, "models/hint.glb")
-                        if (puzzle1Vib == 0) {
-                            vibrator.vibrate(500)
-                            puzzle1Vib = 1
+                        when(shake) {
+                            false -> placeObject(anchorNodePuzzle1, "models/tap.glb")
+                            true ->  placeObject(anchorNodePuzzle1, "models/puzzle1/hint1.glb")
                         }
                     }
-                    2 -> placeObject(anchorNodePuzzle1, "models/solved.glb")
+                    2 -> {
+                        when(shake){
+                            false -> placeObject(anchorNodePuzzle1, "models/tap.glb")
+                            true -> placeObject(anchorNodePuzzle1, "models/puzzle1/hint2.glb")
+                        }
+                    }
+                    3 -> {
+                        when(shake){
+                            false -> placeObject(anchorNodePuzzle1, "models/tap.glb")
+                            true -> placeObject(anchorNodePuzzle1, "models/puzzle1/hint3.glb")
+                        }
+                    }
+                    5 -> {
+                        placeObject(anchorNodePuzzle1, "models/solved.glb")
+                        puzzle1Sub=6
+                        delay=5000
+                    }
                 }
                 Handler(Looper.getMainLooper()).postDelayed({
-                    arFragment!!.arSceneView.scene.removeChild(anchorNodePuzzle1)
+                    anchorNodePuzzle1.anchor?.detach()
+                    anchorNodePuzzle1.parent = null
+                    anchorNodePuzzle1.anchor = null
+                    anchorNodePuzzle1.renderable = null
+                    arFragment!!.arSceneView.scene.removeChild(anchorNodePuzzle2)
                     puzzle1Detected = false
-                }, 1000)
+                    if (puzzle1Sub==6){
+                        puzzle1Detected = true
+                    }
+                }, delay.toLong())
             }
+
+
             if (!puzzle2Detected && augmentedImage.name == "puzzle2") {
+                var delay=1000
                 puzzle2Detected = true
-                val topic = "game/puzzle2"
-                mqttClient.subscribe(topic)
                 when(puzzle2Sub)
                 {
                     0 -> placeObject(anchorNodePuzzle2, "models/nactive.glb")
                     1 -> {
-                        placeObject(anchorNodePuzzle2, "models/hint.glb")
-                        if (puzzle2Vib == 0) {
-                            vibrator.vibrate(500)
-                            puzzle2Vib = 1
+                        when(shake) {
+                            false -> placeObject(anchorNodePuzzle2, "models/tap.glb")
+                            true -> placeObject(anchorNodePuzzle2, "models/puzzle2/hint.glb")
                         }
                     }
-                    2 -> placeObject(anchorNodePuzzle2, "models/solved.glb")
+                    3 -> {
+                        placeObject(anchorNodePuzzle2, "models/solved.glb")
+                        puzzle2Sub=4
+                        delay=5000
+                    }
                 }
                 Handler(Looper.getMainLooper()).postDelayed({
+                    anchorNodePuzzle2.anchor?.detach()
+                    anchorNodePuzzle2.parent = null
+                    anchorNodePuzzle2.anchor = null
+                    anchorNodePuzzle2.renderable = null
                     arFragment!!.arSceneView.scene.removeChild(anchorNodePuzzle2)
                     puzzle2Detected = false
-                }, 1000)
+                    if (puzzle2Sub==4){
+                        puzzle2Detected = true
+                    }
+                },delay.toLong())
             }
+
+
             if (!puzzle3Detected && augmentedImage.name == "puzzle3") {
+                var delay=1000
                 puzzle3Detected = true
-                val topic = "game/puzzle3"
-                mqttClient.subscribe(topic)
                 when(puzzle3Sub)
                 {
                     0 -> placeObject(anchorNodePuzzle3, "models/nactive.glb")
                     1 -> {
-                        placeObject(anchorNodePuzzle3, "models/hint.glb")
-                        if (puzzle3Vib == 0) {
-                            vibrator.vibrate(500)
-                            puzzle3Vib = 1
+                        when(shake){
+                            false -> placeObject(anchorNodePuzzle3, "models/tap.glb")
+                            true -> placeObject(anchorNodePuzzle3, "models/puzzle3/antenna.glb")
                         }
                     }
-                    2 -> placeObject(anchorNodePuzzle3, "models/solved.glb")
+                    2 -> {
+                        when(shake){
+                            false -> placeObject(anchorNodePuzzle3, "models/tap.glb")
+                            true -> placeObject(anchorNodePuzzle3, "models/puzzle3/map1.glb")
+                        }
+                    }
+                    3 -> {
+                        when(shake){
+                            false -> placeObject(anchorNodePuzzle3, "models/tap.glb")
+                            true -> placeObject(anchorNodePuzzle3, "models/puzzle3/map2.glb")
+                        }
+                    }
+                    4 -> {
+                        when(shake){
+                            false -> placeObject(anchorNodePuzzle3, "models/tap.glb")
+                            true -> placeObject(anchorNodePuzzle3, "models/puzzle3/touch1.glb")
+                        }
+                    }
+                    5 -> {
+                        when(shake){
+                            false -> placeObject(anchorNodePuzzle3, "models/tap.glb")
+                            true -> placeObject(anchorNodePuzzle3, "models/puzzle3/touch2.glb")
+                        }
+                    }
+                    6 -> {
+                        when(shake){
+                            false -> placeObject(anchorNodePuzzle3, "models/tap.glb")
+                            true -> placeObject(anchorNodePuzzle3, "models/puzzle3/touch3.glb")
+                        }
+                    }
+                    8 -> {
+                        placeObject(anchorNodePuzzle3, "models/solved.glb")
+                        puzzle3Sub=9
+                        delay=5000
+                    }
                 }
                 Handler(Looper.getMainLooper()).postDelayed({
                     arFragment!!.arSceneView.scene.removeChild(anchorNodePuzzle3)
                     puzzle3Detected = false
-                }, 1000)
+                    anchorNodePuzzle3.anchor?.detach()
+                    anchorNodePuzzle3.parent = null
+                    anchorNodePuzzle3.anchor = null
+                    anchorNodePuzzle3.renderable = null
+                    if (puzzle3Sub==9){
+                        puzzle3Detected = true
+                    }
+                }, delay.toLong())
             }
+
+
             if (!puzzle4Detected && augmentedImage.name == "puzzle4") {
+                var delay=1000
                 puzzle4Detected = true
-                val topic = "game/puzzle4"
-                mqttClient.subscribe(topic)
                 when(puzzle4Sub)
                 {
                     0 -> placeObject(anchorNodePuzzle4, "models/nactive.glb")
                     1 -> {
-                        placeObject(anchorNodePuzzle4, "models/hint.glb")
-                        if (puzzle4Vib == 0) {
-                            vibrator.vibrate(500)
-                            puzzle4Vib = 1
+                        when(shake)
+                        {
+                            false -> placeObject(anchorNodePuzzle4, "models/tap.glb")
+                            true -> placeObject(anchorNodePuzzle4, "models/puzzle4/hint.glb")
                         }
                     }
-                    2 -> placeObject(anchorNodePuzzle4, "models/solved.glb")
+                    3 -> {
+                        placeObject(anchorNodePuzzle4, "models/solved.glb")
+                        puzzle4Sub=4
+                        delay=5000
+                    }
                 }
                 Handler(Looper.getMainLooper()).postDelayed({
                     arFragment!!.arSceneView.scene.removeChild(anchorNodePuzzle4)
+                    anchorNodePuzzle4.anchor?.detach()
                     puzzle4Detected = false
-                }, 1000)
+                    anchorNodePuzzle4.parent = null
+                    anchorNodePuzzle4.anchor = null
+                    anchorNodePuzzle4.renderable = null
+                    if (puzzle4Sub==4){
+                        puzzle4Detected = true
+                    }
+                },delay.toLong())
             }
+
+
             if (!puzzle5Detected && augmentedImage.name == "puzzle5") {
+                var delay=1000
                 puzzle5Detected = true
-                val topic = "game/puzzle5"
-                mqttClient.subscribe(topic)
                 when(puzzle5Sub)
                 {
                     0 -> placeObject(anchorNodePuzzle5, "models/nactive.glb")
                     1 -> {
-                        placeObject(anchorNodePuzzle5, "models/hint.glb")
-                        if (puzzle5Vib == 0) {
-                            vibrator.vibrate(500)
-                            puzzle5Vib = 1
+                        when(shake)
+                        {
+                            false -> placeObject(anchorNodePuzzle5, "models/tap.glb")
+                            true -> placeObject(anchorNodePuzzle5, "models/puzzle5/hint.glb")
                         }
                     }
-                    2 -> placeObject(anchorNodePuzzle5, "models/solved.glb")
+                    3 -> {
+                        placeObject(anchorNodePuzzle5, "models/solved.glb")
+                        puzzle5Sub=4
+                        delay=5000
+                    }
                 }
                 Handler(Looper.getMainLooper()).postDelayed({
                     arFragment!!.arSceneView.scene.removeChild(anchorNodePuzzle5)
+                    anchorNodePuzzle5.anchor?.detach()
                     puzzle5Detected = false
-                }, 1000)
+                    anchorNodePuzzle5.parent = null
+                    anchorNodePuzzle5.anchor = null
+                    anchorNodePuzzle5.renderable = null
+                    if (puzzle5Sub==4){
+                        puzzle5Detected = true
+                    }
+                },delay.toLong())
             }
         }
     }

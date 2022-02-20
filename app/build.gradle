@@ -5,6 +5,14 @@ plugins {
 }
 
 android {
+    signingConfigs {
+        release {
+        storeFile file('C:\\Project\\key\\key.jks')
+            storePassword 'thenga'
+            keyAlias 'key0'
+            keyPassword 'thenga'
+        }
+    }
     compileSdk 31
     buildFeatures {
         viewBinding = true
