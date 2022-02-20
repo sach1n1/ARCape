@@ -31,7 +31,7 @@ class ViewPagerAdapter(private val context: Context): PagerAdapter() {
     private val descriptionArray = arrayOf(
         "Welcome to the Smart Escape Room.",
         "Use your skills and solve the puzzles and get to the Control Room.",
-        "Please don't lock the phone or put the phone down!!",
+        "Please don't lock the phone or put the phone down!! \n This causes the AR objects to drift.",
         "Scan the images to get hints"
     )
 

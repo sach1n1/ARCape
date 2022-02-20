@@ -97,7 +97,7 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
         when(event.action)
         {
             MotionEvent.ACTION_UP -> {
-                Toast.makeText(applicationContext, "Tap registered", Toast.LENGTH_SHORT).show()
+                //Toast.makeText(applicationContext, "Tap registered", Toast.LENGTH_SHORT).show()
                 if (!shake) shake = true
             }
         }
@@ -299,8 +299,12 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
     }
 
     private fun reloadActivity() {
+        val reloadThis = Intent(
+            this,
+            MainActivity::class.java
+        )
+        startActivity(reloadThis)
         this.finish()
-        startActivity(intent)
         //overridePendingTransition(0, 0)
     }
 
@@ -344,6 +348,7 @@ class MainActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionCon
             return
         }
         if (augmentedImage.trackingState == TrackingState.TRACKING ) {
+
             val anchorNodePuzzle1 = AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose))
             val anchorNodePuzzle2 = AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose))
             val anchorNodePuzzle3 = AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose))
