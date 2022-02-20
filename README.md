@@ -12,7 +12,7 @@ The image to be scanned will be placed next to the puzzles and can be scanned th
 1. Not activated state: In this state, the puzzle has not been activated and is not playable. The application will place an AR object with the text “Not Activated” to highlight the state of the puzzle.
 2. Activated state: In this state, the puzzle has been activated and is playable. The application does the following:
     - Tap to Show Hint: The AR projection displays “Tap to show hint”, in case the player doesn’t want to use the hint to solve the puzzle.
-    - Hint: When the user taps the screen, the application places an object with the hint text. In case of multiple hints, when the next hint is active, the application goes back to 2(a) and this repeats until all the hints have been obtained.
+    - Hint: When the user taps the screen, the application places an object with the hint text. In case of multiple hints, when the next hint is active, the application goes back to the previous step and this repeats until all the hints have been obtained.
 3. Solved state: When the puzzle has been completely solved it reaches the solved state. The AR object now displays the text “solved!!”.
 
 In order to make changes, once you have downloaded the repository make your changes and then generate a new APK file and continue from there.
